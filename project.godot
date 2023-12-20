@@ -1,0 +1,564 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+_global_script_classes=[ {
+"base": "MarginContainer",
+"class": "ChoiceContainer",
+"language": "GDScript",
+"path": "res://examples/scenes/common/choice_container.gd"
+}, {
+"base": "Reference",
+"class": "InkBase",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/common/ink_base.gd"
+}, {
+"base": "InkValue",
+"class": "InkBoolValue",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/values/bool_value.gd"
+}, {
+"base": "Reference",
+"class": "InkCSharpValidator",
+"language": "GDScript",
+"path": "res://addons/inkgd/editor/common/ink_csharp_validator.gd"
+}, {
+"base": "InkBase",
+"class": "InkCallStack",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/callstack.gd"
+}, {
+"base": "InkObject",
+"class": "InkChoice",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/content/choices/choice.gd"
+}, {
+"base": "InkObject",
+"class": "InkChoicePoint",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/content/choices/choice_point.gd"
+}, {
+"base": "InkExecutionConfiguration",
+"class": "InkCompilationConfiguration",
+"language": "GDScript",
+"path": "res://addons/inkgd/editor/common/executors/structures/ink_compilation_configuration.gd"
+}, {
+"base": "InkExternalCommandExecutor",
+"class": "InkCompiler",
+"language": "GDScript",
+"path": "res://addons/inkgd/editor/common/executors/ink_compiler.gd"
+}, {
+"base": "Reference",
+"class": "InkConfiguration",
+"language": "GDScript",
+"path": "res://addons/inkgd/editor/common/ink_configuration.gd"
+}, {
+"base": "InkExternalCommandExecutor",
+"class": "InkConfigurationTester",
+"language": "GDScript",
+"path": "res://addons/inkgd/editor/common/executors/ink_configuration_tester.gd"
+}, {
+"base": "InkObject",
+"class": "InkContainer",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/content/container.gd"
+}, {
+"base": "InkObject",
+"class": "InkControlCommand",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/content/control_command.gd"
+}, {
+"base": "InkBase",
+"class": "InkDebugMetadata",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/debug_metadata.gd"
+}, {
+"base": "InkObject",
+"class": "InkDivert",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/content/divert.gd"
+}, {
+"base": "InkValue",
+"class": "InkDivertTargetValue",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/values/divert_target_value.gd"
+}, {
+"base": "Reference",
+"class": "InkEditorInterface",
+"language": "GDScript",
+"path": "res://addons/inkgd/editor/common/ink_editor_interface.gd"
+}, {
+"base": "Reference",
+"class": "InkExecutionConfiguration",
+"language": "GDScript",
+"path": "res://addons/inkgd/editor/common/executors/structures/ink_execution_configuration.gd"
+}, {
+"base": "Reference",
+"class": "InkExecutionResult",
+"language": "GDScript",
+"path": "res://addons/inkgd/editor/common/executors/structures/ink_execution_result.gd"
+}, {
+"base": "Reference",
+"class": "InkExternalCommandExecutor",
+"language": "GDScript",
+"path": "res://addons/inkgd/editor/common/executors/ink_external_command_executor.gd"
+}, {
+"base": "InkValue",
+"class": "InkFloatValue",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/values/float_value.gd"
+}, {
+"base": "InkBase",
+"class": "InkFlow",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/flow.gd"
+}, {
+"base": "Reference",
+"class": "InkFunctionResult",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/extra/function_result.gd"
+}, {
+"base": "Reference",
+"class": "InkGDProfiler",
+"language": "GDScript",
+"path": "res://examples/scenes/common/profiler.gd"
+}, {
+"base": "InkObject",
+"class": "InkGlue",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/content/glue.gd"
+}, {
+"base": "InkValue",
+"class": "InkIntValue",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/values/int_value.gd"
+}, {
+"base": "EditorImportPlugin",
+"class": "InkJsonImportPlugin",
+"language": "GDScript",
+"path": "res://addons/inkgd/editor/import_plugins/ink_json_import_plugin.gd"
+}, {
+"base": "Reference",
+"class": "InkKeyValuePair",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/extra/key_value_pair.gd"
+}, {
+"base": "InkObject",
+"class": "InkList",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/lists/ink_list.gd"
+}, {
+"base": "InkObject",
+"class": "InkListDefinition",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/lists/list_definition.gd"
+}, {
+"base": "InkObject",
+"class": "InkListDefinitionsOrigin",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/lists/list_definitions_origin.gd"
+}, {
+"base": "InkObject",
+"class": "InkListItem",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/lists/structs/ink_list_item.gd"
+}, {
+"base": "InkValue",
+"class": "InkListValue",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/values/list_value.gd"
+}, {
+"base": "InkObject",
+"class": "InkNativeFunctionCall",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/content/native_function_call.gd"
+}, {
+"base": "InkBase",
+"class": "InkObject",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/common/ink_object.gd"
+}, {
+"base": "InkBase",
+"class": "InkPath",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/ink_path.gd"
+}, {
+"base": "Node",
+"class": "InkPlayer",
+"language": "GDScript",
+"path": "res://addons/inkgd/ink_player.gd"
+}, {
+"base": "Reference",
+"class": "InkPlayerFactory",
+"language": "GDScript",
+"path": "res://addons/inkgd/ink_player_factory.gd"
+}, {
+"base": "InkBase",
+"class": "InkPointer",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/structs/pointer.gd"
+}, {
+"base": "InkBase",
+"class": "InkProfiler",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/profiler.gd"
+}, {
+"base": "Resource",
+"class": "InkResource",
+"language": "GDScript",
+"path": "res://addons/inkgd/editor/import_plugins/ink_resource.gd"
+}, {
+"base": "InkBase",
+"class": "InkSearchResult",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/search_result.gd"
+}, {
+"base": "InkBase",
+"class": "InkSimpleJSON",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/simple_json.gd"
+}, {
+"base": "EditorImportPlugin",
+"class": "InkSourceImportPlugin",
+"language": "GDScript",
+"path": "res://addons/inkgd/editor/import_plugins/ink_source_import_plugin.gd"
+}, {
+"base": "Reference",
+"class": "InkStateElement",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/extra/state_element.gd"
+}, {
+"base": "InkBase",
+"class": "InkStatePatch",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/state_patch.gd"
+}, {
+"base": "InkBase",
+"class": "InkStaticJSON",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/static/json.gd"
+}, {
+"base": "Reference",
+"class": "InkStaticNativeFunctionCall",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/static/native_function_call.gd"
+}, {
+"base": "Reference",
+"class": "InkStopWatch",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/extra/stopwatch.gd"
+}, {
+"base": "InkObject",
+"class": "InkStory",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/story.gd"
+}, {
+"base": "InkBase",
+"class": "InkStoryState",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/story_state.gd"
+}, {
+"base": "Reference",
+"class": "InkStringSet",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/extra/string_set.gd"
+}, {
+"base": "InkValue",
+"class": "InkStringValue",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/values/string_value.gd"
+}, {
+"base": "Reference",
+"class": "InkStringWriter",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/extra/string_writer.gd"
+}, {
+"base": "InkObject",
+"class": "InkTag",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/content/tag.gd"
+}, {
+"base": "Reference",
+"class": "InkTryGetResult",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/extra/try_get_result.gd"
+}, {
+"base": "Reference",
+"class": "InkUtils",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/extra/utils.gd"
+}, {
+"base": "InkObject",
+"class": "InkValue",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/values/value.gd"
+}, {
+"base": "InkObject",
+"class": "InkVariableAssignment",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/content/variable_assignment.gd"
+}, {
+"base": "InkValue",
+"class": "InkVariablePointerValue",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/values/variable_pointer_value.gd"
+}, {
+"base": "InkObject",
+"class": "InkVariableReference",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/content/variable_reference.gd"
+}, {
+"base": "InkBase",
+"class": "InkVariablesState",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/variables_state.gd"
+}, {
+"base": "InkObject",
+"class": "InkVoid",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/content/void.gd"
+}, {
+"base": "Node",
+"class": "PopochiuAudioManager",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Engine/AudioManager/AudioManager.gd"
+}, {
+"base": "Area2D",
+"class": "PopochiuCharacter",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Engine/Objects/Character/PopochiuCharacter.gd"
+}, {
+"base": "Resource",
+"class": "PopochiuCharacterData",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Engine/Objects/Character/PopochiuCharacterData.gd"
+}, {
+"base": "Area2D",
+"class": "PopochiuClickable",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Engine/Objects/Clickable/PopochiuClickable.gd"
+}, {
+"base": "Resource",
+"class": "PopochiuDialog",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Engine/Objects/Dialog/PopochiuDialog.gd"
+}, {
+"base": "Resource",
+"class": "PopochiuDialogOption",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Engine/Objects/Dialog/PopochiuDialogOption.gd"
+}, {
+"base": "PanelContainer",
+"class": "PopochiuGroup",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Editor/MainDock/PopochiuGroup/PopochiuGroup.gd"
+}, {
+"base": "Area2D",
+"class": "PopochiuHotspot",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Engine/Objects/Hotspot/PopochiuHotspot.gd"
+}, {
+"base": "TextureRect",
+"class": "PopochiuInventoryItem",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Engine/Objects/InventoryItem/PopochiuInventoryItem.gd"
+}, {
+"base": "Resource",
+"class": "PopochiuInventoryItemData",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Engine/Objects/InventoryItem/PopochiuInventoryItemData.gd"
+}, {
+"base": "Area2D",
+"class": "PopochiuProp",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Engine/Objects/Prop/PopochiuProp.gd"
+}, {
+"base": "Area2D",
+"class": "PopochiuRegion",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Engine/Objects/Region/PopochiuRegion.gd"
+}, {
+"base": "Node",
+"class": "PopochiuResources",
+"language": "GDScript",
+"path": "res://addons/Popochiu/PopochiuResources.gd"
+}, {
+"base": "YSort",
+"class": "PopochiuRoom",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Engine/Objects/Room/PopochiuRoom.gd"
+}, {
+"base": "Resource",
+"class": "PopochiuRoomData",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Engine/Objects/Room/PopochiuRoomData.gd"
+}, {
+"base": "Resource",
+"class": "PopochiuSettings",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Engine/Objects/PopochiuSettings.gd"
+}, {
+"base": "Node2D",
+"class": "PopochiuWalkableArea",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Engine/Objects/WalkableArea/PopochiuWalkableArea.gd"
+}, {
+"base": "Reference",
+"class": "StoryError",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/extra/story_error.gd"
+}, {
+"base": "Reference",
+"class": "StoryErrorMetadata",
+"language": "GDScript",
+"path": "res://addons/inkgd/runtime/extra/story_error_metadata.gd"
+}, {
+"base": "CanvasLayer",
+"class": "TransitionLayer",
+"language": "GDScript",
+"path": "res://addons/Popochiu/Engine/Objects/TransitionLayer/TransitionLayer.gd"
+} ]
+_global_script_class_icons={
+"ChoiceContainer": "",
+"InkBase": "",
+"InkBoolValue": "",
+"InkCSharpValidator": "",
+"InkCallStack": "",
+"InkChoice": "",
+"InkChoicePoint": "",
+"InkCompilationConfiguration": "",
+"InkCompiler": "",
+"InkConfiguration": "",
+"InkConfigurationTester": "",
+"InkContainer": "",
+"InkControlCommand": "",
+"InkDebugMetadata": "",
+"InkDivert": "",
+"InkDivertTargetValue": "",
+"InkEditorInterface": "",
+"InkExecutionConfiguration": "",
+"InkExecutionResult": "",
+"InkExternalCommandExecutor": "",
+"InkFloatValue": "",
+"InkFlow": "",
+"InkFunctionResult": "",
+"InkGDProfiler": "",
+"InkGlue": "",
+"InkIntValue": "",
+"InkJsonImportPlugin": "",
+"InkKeyValuePair": "",
+"InkList": "",
+"InkListDefinition": "",
+"InkListDefinitionsOrigin": "",
+"InkListItem": "",
+"InkListValue": "",
+"InkNativeFunctionCall": "",
+"InkObject": "",
+"InkPath": "",
+"InkPlayer": "",
+"InkPlayerFactory": "",
+"InkPointer": "",
+"InkProfiler": "",
+"InkResource": "",
+"InkSearchResult": "",
+"InkSimpleJSON": "",
+"InkSourceImportPlugin": "",
+"InkStateElement": "",
+"InkStatePatch": "",
+"InkStaticJSON": "",
+"InkStaticNativeFunctionCall": "",
+"InkStopWatch": "",
+"InkStory": "",
+"InkStoryState": "",
+"InkStringSet": "",
+"InkStringValue": "",
+"InkStringWriter": "",
+"InkTag": "",
+"InkTryGetResult": "",
+"InkUtils": "",
+"InkValue": "",
+"InkVariableAssignment": "",
+"InkVariablePointerValue": "",
+"InkVariableReference": "",
+"InkVariablesState": "",
+"InkVoid": "",
+"PopochiuAudioManager": "",
+"PopochiuCharacter": "res://addons/Popochiu/icons/character.png",
+"PopochiuCharacterData": "res://addons/Popochiu/icons/character.png",
+"PopochiuClickable": "",
+"PopochiuDialog": "res://addons/Popochiu/icons/dialog.png",
+"PopochiuDialogOption": "",
+"PopochiuGroup": "res://addons/Popochiu/Editor/MainDock/PopochiuGroup/popochiu_group.svg",
+"PopochiuHotspot": "res://addons/Popochiu/icons/hotspot.png",
+"PopochiuInventoryItem": "res://addons/Popochiu/icons/inventory_item.png",
+"PopochiuInventoryItemData": "res://addons/Popochiu/icons/inventory_item.png",
+"PopochiuProp": "res://addons/Popochiu/icons/prop.png",
+"PopochiuRegion": "res://addons/Popochiu/icons/region.png",
+"PopochiuResources": "",
+"PopochiuRoom": "res://addons/Popochiu/icons/room.png",
+"PopochiuRoomData": "res://addons/Popochiu/icons/room.png",
+"PopochiuSettings": "",
+"PopochiuWalkableArea": "res://addons/Popochiu/icons/walkable_area.png",
+"StoryError": "",
+"StoryErrorMetadata": "",
+"TransitionLayer": ""
+}
+
+[application]
+
+config/name="Popochiu-Ink-Integration"
+config/icon="res://icon.png"
+
+[autoload]
+
+Globals="*res://popochiu/PopochiuGlobals.gd"
+U="*res://addons/Popochiu/Engine/Others/PopochiuUtils.gd"
+Cursor="*res://addons/Popochiu/Engine/Cursor/Cursor.tscn"
+E="*res://addons/Popochiu/Engine/Popochiu.tscn"
+R="*res://popochiu/Autoloads/R.gd"
+C="*res://popochiu/Autoloads/C.gd"
+I="*res://popochiu/Autoloads/I.gd"
+D="*res://popochiu/Autoloads/D.gd"
+G="*res://addons/Popochiu/Engine/Interfaces/IGraphicInterface.gd"
+A="*res://popochiu/Autoloads/A.gd"
+__InkRuntime="*res://addons/inkgd/runtime/static/ink_runtime.gd"
+
+[editor_plugins]
+
+enabled=PoolStringArray( "res://addons/Popochiu/plugin.cfg", "res://addons/inkgd/plugin.cfg" )
+
+[gui]
+
+common/drop_mouse_on_gui_input_disabled=true
+
+[input]
+
+popochiu-interact={
+"deadzone": 0.5,
+"events": [ Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"button_mask":0,"position":Vector2( 0, 0 ),"global_position":Vector2( 0, 0 ),"factor":1.0,"button_index":1,"pressed":false,"doubleclick":false,"script":null)
+ ]
+}
+popochiu-look={
+"deadzone": 0.5,
+"events": [ Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"button_mask":0,"position":Vector2( 0, 0 ),"global_position":Vector2( 0, 0 ),"factor":1.0,"button_index":2,"pressed":false,"doubleclick":false,"script":null)
+ ]
+}
+popochiu-skip={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777217,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
+ ]
+}
+
+[physics]
+
+common/enable_pause_aware_picking=true
+
+[rendering]
+
+environment/default_environment="res://default_env.tres"
