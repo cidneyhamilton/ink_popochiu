@@ -26,20 +26,46 @@ func _get_story(ink_file: String):
 
 func _continue_story() -> void:
 	if _current_story.can_continue:
+		print("Story can continue")
 		var text : String = _current_story.continue()
 		var text_info : RegExMatch = _regex_text.search(text)
 		var command_info :RegExMatch = _regex_command.search(text)
 		if text_info:
 			_say(text_info.get_string("character"), text_info.get_string("text"))
-		_continue_story()
+		else:
+			print("Text doesn't match form <character name>:<text>: %s" % text)
+	elif _current_story.current_choices.size() > 0:
+		_choose()
 	else:
 		# End story
 		pass
 
+func _choose() -> void:
+	var opts = []
+	for choice in _current_story.current_choices:
+		opts.push_back(choice.text)
+		
+	var selection : PopochiuDialogOption = yield(
+		D.show_inline_dialog(opts), 'completed'
+	)
+
+	_choose_option(selection)
+
+func _choose_option(opt: PopochiuDialogOption) -> void:
+	var i := 0
+	for choice in _current_story.current_choices:
+		if choice.text == opt.text:
+			_current_story.choose_choice_index(i)
+			# Don't allow dialog to repeat itself
+			_current_story.continue()
+		i += 1
+	_continue_story()
+	
 func _say(character: String, text: String) -> void:
 	yield(E.run([
 		C.character_say(character, text)
 	]), 'completed')
+	_continue_story()
 	
 func Play(knot: String) -> void:
 	_current_story = _get_story(ink_file)
