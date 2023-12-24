@@ -9,11 +9,6 @@
 config_version=4
 
 _global_script_classes=[ {
-"base": "MarginContainer",
-"class": "ChoiceContainer",
-"language": "GDScript",
-"path": "res://examples/scenes/common/choice_container.gd"
-}, {
 "base": "Reference",
 "class": "InkBase",
 "language": "GDScript",
@@ -123,11 +118,6 @@ _global_script_classes=[ {
 "class": "InkFunctionResult",
 "language": "GDScript",
 "path": "res://addons/inkgd/runtime/extra/function_result.gd"
-}, {
-"base": "Reference",
-"class": "InkGDProfiler",
-"language": "GDScript",
-"path": "res://examples/scenes/common/profiler.gd"
 }, {
 "base": "InkObject",
 "class": "InkGlue",
@@ -425,7 +415,6 @@ _global_script_classes=[ {
 "path": "res://addons/Popochiu/Engine/Objects/TransitionLayer/TransitionLayer.gd"
 } ]
 _global_script_class_icons={
-"ChoiceContainer": "",
 "InkBase": "",
 "InkBoolValue": "",
 "InkCSharpValidator": "",
@@ -448,7 +437,6 @@ _global_script_class_icons={
 "InkFloatValue": "",
 "InkFlow": "",
 "InkFunctionResult": "",
-"InkGDProfiler": "",
 "InkGlue": "",
 "InkIntValue": "",
 "InkJsonImportPlugin": "",
@@ -513,6 +501,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Popochiu-Ink-Integration"
+run/main_scene="res://popochiu/Rooms/101/Room101.tscn"
 config/icon="res://icon.png"
 
 [autoload]
@@ -528,10 +517,20 @@ D="*res://popochiu/Autoloads/D.gd"
 G="*res://addons/Popochiu/Engine/Interfaces/IGraphicInterface.gd"
 A="*res://popochiu/Autoloads/A.gd"
 __InkRuntime="*res://addons/inkgd/runtime/static/ink_runtime.gd"
+InkPopochiu="*res://addons/ink_popochiu/InkPopochiu.gd"
+
+[display]
+
+window/size/width=320
+window/size/height=180
+window/size/test_width=320
+window/size/test_height=180
+window/stretch/mode="2d"
+window/stretch/aspect="keep"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/Popochiu/plugin.cfg", "res://addons/inkgd/plugin.cfg" )
+enabled=PoolStringArray( "res://addons/Popochiu/plugin.cfg", "res://addons/ink_popochiu/plugin.cfg", "res://addons/inkgd/plugin.cfg" )
 
 [gui]
 

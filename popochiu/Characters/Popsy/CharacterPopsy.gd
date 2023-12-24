@@ -12,7 +12,8 @@ var state: Data = preload('CharacterPopsy.tres')
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ VIRTUAL ░░░░
 # When the node is clicked
 func on_interact() -> void:
-	D.TestA.start()
+	InkPopochiu.Play("TestA")
+	# D.TestA.start()
 	
 #	if state.is_hungry:
 #		state.is_hungry = false
