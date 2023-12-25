@@ -23,11 +23,8 @@ Player: Hi there, let's test this out!
 
 This plugin is a work in progress.
 
-+ Allow jumping to an arbitrary knot
-+ Better way to specify ink script
-+ Get and set global Ink variables from Popochiu scripts
-+ Get and set local Popochiu variables from Ink scripts
 + Check for objects in the player's inventory
 + Add and remove objects from the player's inventory
 + Play animations from Ink scripts
-+ Specify repeating and non-repeating choices
++ Specify the ink script name in the configuration.
++ Remember whether a node was visited in game; don't require variables for each node.

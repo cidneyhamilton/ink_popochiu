@@ -6,6 +6,8 @@ var health := 50
 var umbrella_position := Vector2.ONE
 var cards := ['blue', 'red', 'yellow']
 
+var hi := false
+var how := false
 
 func on_save() -> Dictionary:
 	return {
