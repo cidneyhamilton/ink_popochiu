@@ -4,18 +4,14 @@ var took_car := false
 var money := 100
 var health := 50
 var umbrella_position := Vector2.ONE
-var cards := ['blue', 'red', 'yellow']
+var cards := ["blue", "red", "yellow"]
 
 var hi := false
 var how := false
 
+
 func on_save() -> Dictionary:
-	return {
-		umbrella_position = {
-			x = 200.0,
-			y = 300.0
-		}
-	}
+	return {umbrella_position = {x = 200.0, y = 300.0}}
 
 
 func on_load(data: Dictionary) -> void:
