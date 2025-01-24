@@ -6,10 +6,15 @@ This is inspired by Graham Hayes' [AC-Ink-Integration](https://github.com/Graham
 
 ## Requirements
 
-+ [Godot 3.5](https://godotengine.org/)
-+ [inkGD 0.5.0](https://github.com/ephread/inkgd)
-+ [Popochiu 1.9](https://github.com/mapedorr/popochiu)
-+ [Ink 1.1.1](https://github.com/inkle/ink)
++ [Godot 4.3](https://godotengine.org/)
++ [inkGD 0.5.0](https://github.com/ephread/inkgd) - use Godot 4 branch
++ [Popochiu 2.0.0](https://github.com/mapedorr/popochiu)
++ [Ink 1.1.2](https://github.com/inkle/ink) and Inklecate
+
+## Setup
+Install Popochiu and InkGD. Initialize plugin. Add InkRuntime and InkPopochiu as Global objects.
+
+Ink variables should correspond to Popochiu variables.
 
 ## Writing Dialog
 

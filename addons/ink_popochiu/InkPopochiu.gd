@@ -3,7 +3,7 @@ extends Node
 const REGEX_TEXT = "(?<character>[\\w]+):\\s*(?<text>.+)"
 const REGEX_COMMAND = ">>\\s*(?<command>.+)"
 
-var Story = preload("res://addons/inkgd/runtime/story.gd")
+var Story = preload("res://addons/inkgd/runtime/ink_story.gd")
 var _current_story = null
 
 # TODO: Specify this in configuration
@@ -20,18 +20,18 @@ func _ready() -> void:
 
 # Initializes the story from a file
 func _get_story(ink_file: String):
-	var ink_story = File.new()
-	ink_story.open(ink_file, File.READ)
+	var ink_story = FileAccess.open(ink_file, FileAccess.READ)
 	var content = ink_story.get_as_text()
 	ink_story.close()
-	return Story.new(content)
+	var runtime = get_node("/root/")
+	return Story.new(content, InkRuntime)
 
 
 # Continues the story
 func _continue_story() -> void:
 	if _current_story.can_continue:
 		print("Story can continue")
-		var text: String = _current_story.continue()
+		var text: String = _current_story.continue_story()
 		var text_info: RegExMatch = _regex_text.search(text)
 		var command_info: RegExMatch = _regex_command.search(text)
 		if command_info:
@@ -61,8 +61,8 @@ func _choose() -> void:
 	for choice in _current_story.current_choices:
 		opts.push_back(choice.text)
 
-	var selection: PopochiuDialogOption = yield(D.show_inline_dialog(opts), "completed")
-
+	var selection : PopochiuDialogOption = await D.show_inline_dialog(opts)
+	
 	_choose_option(selection)
 
 
@@ -73,14 +73,14 @@ func _choose_option(opt: PopochiuDialogOption) -> void:
 		if choice.text == opt.text:
 			_current_story.choose_choice_index(i)
 			# Don't allow dialog to repeat itself
-			_current_story.continue()
+			_current_story.continue_story()
 		i += 1
 	_continue_story()
 
 
 # Say a line of text and continue the story
 func _say(character: String, text: String) -> void:
-	yield(E.run([C.character_say(character, text)]), "completed")
+	await C.get_character(character).say(text)
 	_continue_story()
 
 

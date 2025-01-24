@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://c2kv2d6e75ie2"]
+
+[ext_resource type="Script" path="res://game/rooms/101/walkable_areas/floor/walkable_area_floor.gd" id="1_xfeeo"]
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_ku0bi"]
+vertices = PackedVector2Array(88, 16, 110, 55, 5, 73, -97, 61, -77, 15)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3, 4)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(-77, 15, 88, 16, 110, 55, 5, 73, -97, 61)])
+agent_radius = 0.0
+
+[node name="Floor" type="Node2D"]
+position = Vector2(160, 90)
+script = ExtResource("1_xfeeo")
+script_name = "Floor"
+description = "Floor"
+interaction_polygon = [PackedVector2Array(-77, 15, 88, 16, 110, 55, 5, 73, -97, 61)]
+
+[node name="Perimeter" type="NavigationRegion2D" parent="."]
+visible = false
+modulate = Color(0, 1, 0, 1)
+navigation_polygon = SubResource("NavigationPolygon_ku0bi")

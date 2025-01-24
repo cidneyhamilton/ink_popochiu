@@ -1,0 +1,27 @@
+[gd_scene load_steps=3 format=3 uid="uid://10otde7wdetf"]
+
+[ext_resource type="Script" path="res://game/characters/godiu/character_godiu.gd" id="1_e72oj"]
+[ext_resource type="Texture2D" uid="uid://b2lotru6qyvhc" path="res://game/characters/godiu/goddiu.png" id="2_lslda"]
+
+[node name="CharacterGodiu" type="Area2D"]
+script = ExtResource("1_e72oj")
+popochiu_placeholder = null
+script_name = "Godiu"
+description = "Godiu"
+cursor = 8
+interaction_polygon = PackedVector2Array(-10, -10, 10, -10, 10, 10, -10, 10)
+
+[node name="InteractionPolygon" type="CollisionPolygon2D" parent="."]
+visible = false
+polygon = PackedVector2Array(-10, -10, 10, -10, 10, 10, -10, 10)
+
+[node name="ScalingPolygon" type="CollisionPolygon2D" parent="."]
+polygon = PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(-1, -27)
+texture = ExtResource("2_lslda")
+hframes = 6
