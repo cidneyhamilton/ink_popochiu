@@ -1,0 +1,9 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://cav3fkij1jfnn"]
+
+[ext_resource type="Script" path="res://game/characters/godiu/character_godiu_state.gd" id="1_6epsv"]
+
+[resource]
+resource_name = "Godiu"
+script = ExtResource("1_6epsv")
+script_name = "Godiu"
+scene = "res://game/characters/godiu/character_godiu.tscn"
