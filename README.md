@@ -36,6 +36,7 @@ I.remove_item
 
 This plugin is a work in progress.
 
++ Sync global variables when updated outside Ink
 + Check for objects in the player's inventory
 + Better configuration
 + Specify the ink script name in the configuration.
