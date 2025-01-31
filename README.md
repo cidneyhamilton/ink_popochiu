@@ -9,7 +9,7 @@ This is inspired by Graham Hayes' [AC-Ink-Integration](https://github.com/Graham
 + [Godot 4.3](https://godotengine.org/)
 + [inkGD](https://github.com/ephread/inkgd)
 + [Popochiu 2](https://github.com/mapedorr/popochiu)
-+ [In](https://github.com/inkle/ink)
++ [Ink](https://github.com/inkle/ink)
 
 ## Writing Dialog
 
