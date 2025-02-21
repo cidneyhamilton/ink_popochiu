@@ -25,8 +25,8 @@ I="*res://game/autoloads/i.gd"
 D="*res://game/autoloads/d.gd"
 A="*res://game/autoloads/a.gd"
 G="*res://addons/popochiu/engine/interfaces/i_graphic_interface.gd"
-InkPopochiu="*res://addons/ink_popochiu/InkPopochiu.gd"
 InkRuntime="*res://addons/inkgd/ink_runtime.gd"
+InkPopochiu="*res://addons/ink_popochiu/ink_popochiu.gd"
 
 [display]
 
