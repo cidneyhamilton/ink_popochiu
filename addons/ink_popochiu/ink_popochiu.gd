@@ -11,16 +11,12 @@ var _regex_command: RegEx = RegEx.new()
 
 @export var ink_story_path : String  = "res://ink/story.ink.json"
 
-@export var custom_functions : Array = ["walk_to_marker", "teleport_to_marker", "set_character_state", "set_room_state", "animate_character", "face_right", "face_left", "face_up", "face_down", "play_sfx", "add_item", "remove_item"]
-
 func _ready() -> void:
 	_regex_text.compile(REGEX_TEXT)
 	_regex_command.compile(REGEX_COMMAND)
 
 	# Setup story
 	_current_story = _get_story(ink_story_path)
-
-	_bind_functions(_current_story, custom_functions)
 	
 	# Store variables
 	for variable in _current_story.variables_state.enumerate():
@@ -49,6 +45,7 @@ func _continue_story() -> void:
 		var command_info: RegExMatch = _regex_command.search(text)
 		if command_info:
 			await _run_command(command_info.get_string("command"))
+			await _continue_story()
 		elif text_info:
 			await _say(text_info.get_string("character"), text_info.get_string("text"))
 		elif text != "":
@@ -59,7 +56,6 @@ func _continue_story() -> void:
 			print("Text doesn't match form <character name>:<text>: %s" % text)
 			await _continue_story()
 	elif _current_story.current_choices.size() > 0:
-		print("Showing choices")
 		await _choose()
 
 
@@ -69,10 +65,7 @@ func _run_command(command: String) -> void:
 	var command_arr = command.split(": ")
 	var command_name = command_arr[0]
 	var command_args = command_arr[1].split(", ")
-
 	_run_command_with_args(command_name, command_args)
-	
-	await _continue_story()
 
 # Virtual: can be overridden with custom commands. These are Popochiu's default.
 func _run_command_with_args(command_name: String, command_args: Array) -> void:
@@ -94,6 +87,18 @@ func _run_command_with_args(command_name: String, command_args: Array) -> void:
 		"PLAY_SFX":
 			var sfx_name = command_args[0]
 			await _play_sfx(sfx_name)
+		"WAIT":
+			var duration : float = float(command_args[0])
+			await _wait(duration)
+		"ANIMATE_CHARACTER":
+			var char_name : String = command_args[0]
+			var animation_name : String = command_args[1]
+			await _animate_character(char_name, animation_name)
+		"SET_CHARACTER_FLAG":
+			var char_name: String = command_args[0]
+			var state_var: String = command_args[1]
+			var state_val: bool = command_args[2] == "true" 
+			await _set_character_state(char_name, state_var, state_val)
 
 
 # Allow player to choose a dialog option
@@ -128,12 +133,7 @@ func _say(character: String, text: String) -> void:
 
 # Update Popochiu's globals whenever a variable in ink changes
 func _observe_variable(variable_name: String, value) -> void:
-	print("Observing variable %s: %s" % [variable_name, value])
 	Globals.set(variable_name, value)
-
-func _bind_functions(story: InkStory, function_list: Array) -> void:
-	for function_name in function_list:
-		_current_story.bind_external_function(function_name, self, "_%s" % function_name, false)
 
 func _teleport_to_marker(char_name: String, marker_name: String) -> void:
 	C.get_character(char_name).teleport_to_marker(marker_name)
@@ -171,6 +171,8 @@ func _add_item(item_name: String) -> void:
 func _remove_item(item_name: String) -> void:
 	I.get_item_instance(item_name).remove()
 
+func _wait(duration: float) -> void:
+	await E.wait(duration)
 	
 #region Public #####################################################################################
 
