@@ -1,39 +1,51 @@
-@tool
 extends Node
 
 const REGEX_TEXT = "(?<character>[\\w]+):\\s*(?<text>.+)"
 const REGEX_COMMAND = ">>>\\s*(?<command>.+)"
 
-var Story = preload("res://addons/inkgd/runtime/ink_story.gd")
-var _current_story = null
+var InkPlayerFactory = preload("res://addons/inkgd/ink_player_factory.gd") as GDScript
+var ink_file = preload( "res://ink/story.ink.json")
+
+var _current_story : InkPlayer = InkPlayerFactory.create()
+
 var _regex_text: RegEx = RegEx.new()
 var _regex_command: RegEx = RegEx.new()
 
-@export var ink_story_path : String  = "res://ink/story.ink.json"
+
+# TODO: Check character and room states
+@export var _custom_functions: Array = [
+]
 
 func _ready() -> void:
+	_current_story.loads_in_background = true
+	
+	add_child(_current_story)
+	
+	_current_story.ink_file = ink_file
+	_current_story.create_story()
+
 	_regex_text.compile(REGEX_TEXT)
 	_regex_command.compile(REGEX_COMMAND)
-
-	# Setup story
-	_current_story = _get_story(ink_story_path)
 	
+	_connect_signals()
+
+func _connect_signals():
+	_current_story.connect("loaded", Callable(self, "_loaded"))
+
+func _loaded(successfully: bool):
+	if !successfully:
+		print("Ink story not loaded!")
+		return
+		
+	print("Ink story loaded")
+	_bind_functions(_custom_functions)
+
 	# Store variables
-	for variable in _current_story.variables_state.enumerate():
+	for variable in _current_story._story.variables_state.enumerate():
 		if Globals.get(variable) == null:
 			print("Ink variable %s not found in the Popochiu globals" % variable)
 		_current_story.observe_variable(variable, self, "_observe_variable")
-		_current_story.variables_state.set(variable, Globals.get(variable))
-
-
-
-# Initializes the story from a file
-func _get_story(ink_file: String):
-	var ink_story = FileAccess.open(ink_file, FileAccess.READ)
-	var content = ink_story.get_as_text()
-	ink_story.close()
-	var runtime = get_node("/root/")
-	return Story.new(content, InkRuntime)
+		_current_story._story.variables_state.set(variable, Globals.get(variable))
 
 
 # Continues the story
@@ -135,6 +147,10 @@ func _say(character: String, text: String) -> void:
 func _observe_variable(variable_name: String, value) -> void:
 	Globals.set(variable_name, value)
 
+func _bind_functions(function_list: Array) -> void:
+	for function_name in function_list:
+		_current_story.bind_external_function(function_name, self, "_%s" % function_name, false)
+
 func _teleport_to_marker(char_name: String, marker_name: String) -> void:
 	C.get_character(char_name).teleport_to_marker(marker_name)
 	
@@ -180,7 +196,7 @@ func play(knot: String) -> void:
 		
 	# Jump to given knot
 	if knot:
-		_current_story.choose_path_string(knot)
+		_current_story.choose_path(knot)
 		
 	await _continue_story()
 	
