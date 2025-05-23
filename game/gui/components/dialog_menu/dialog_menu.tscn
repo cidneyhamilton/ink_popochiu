@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://bge4es3uarmux"]
 
 [ext_resource type="Theme" uid="uid://dopw00atrn173" path="res://game/gui/resources/gui_theme.tres" id="1_61ype"]
-[ext_resource type="Script" path="res://game/gui/components/dialog_menu/dialog_menu_custom.gd" id="2_66qo0"]
+[ext_resource type="Script" uid="uid://y7rtnul6qykv" path="res://game/gui/components/dialog_menu/dialog_menu_custom.gd" id="2_66qo0"]
 [ext_resource type="PackedScene" uid="uid://eed2olekx48l" path="res://game/gui/components/dialog_menu/dialog_menu_option/dialog_menu_option.tscn" id="3_stvx8"]
 
 [node name="DialogMenu" type="Control" groups=["popochiu_gui_component"]]

@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://64tqahqesqbs"]
 
 [ext_resource type="Theme" uid="uid://dopw00atrn173" path="res://game/gui/resources/gui_theme.tres" id="1_7m0vc"]
-[ext_resource type="Script" path="res://game/gui/components/sound_volumes/sound_volumes_custom.gd" id="2_sqb7x"]
+[ext_resource type="Script" uid="uid://bdolft5jmf1hx" path="res://game/gui/components/sound_volumes/sound_volumes_custom.gd" id="2_sqb7x"]
 
 [node name="SoundVolumes" type="GridContainer" groups=["popochiu_gui_component"]]
 size_flags_horizontal = 3

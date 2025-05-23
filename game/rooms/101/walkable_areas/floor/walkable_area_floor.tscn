@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://c2kv2d6e75ie2"]
 
-[ext_resource type="Script" path="res://game/rooms/101/walkable_areas/floor/walkable_area_floor.gd" id="1_xfeeo"]
+[ext_resource type="Script" uid="uid://bduo4bcqbx88f" path="res://game/rooms/101/walkable_areas/floor/walkable_area_floor.gd" id="1_xfeeo"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ku0bi"]
 vertices = PackedVector2Array(88, 16, 110, 55, 5, 73, -97, 61, -77, 15)

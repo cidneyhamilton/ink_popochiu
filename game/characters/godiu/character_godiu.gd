@@ -17,7 +17,7 @@ func _on_room_set() -> void:
 
 # When the node is clicked
 func _on_click() -> void:
-	InkPopochiu.play("TestA")
+	Bridge.play("TestA")
 
 
 func _on_double_click() -> void:

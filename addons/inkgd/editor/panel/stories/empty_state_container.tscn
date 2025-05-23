@@ -1,9 +1,9 @@
-[gd_scene format=2]
+[gd_scene format=3 uid="uid://bdhse2guetkck"]
 
 [node name="EmptyStateContainer" type="CenterContainer"]
 offset_right = 1902.0
 offset_bottom = 100.0
-custom_minimum_size = Vector2( 0, 100 )
+custom_minimum_size = Vector2(0, 100)
 
 [node name="Label" type="Label" parent="."]
 offset_left = 879.0

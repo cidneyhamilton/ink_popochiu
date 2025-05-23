@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://10otde7wdetf"]
 
-[ext_resource type="Script" path="res://game/characters/godiu/character_godiu.gd" id="1_e72oj"]
+[ext_resource type="Script" uid="uid://dktc2fqde6ari" path="res://game/characters/godiu/character_godiu.gd" id="1_e72oj"]
 [ext_resource type="Texture2D" uid="uid://b2lotru6qyvhc" path="res://game/characters/godiu/goddiu.png" id="2_lslda"]
 
 [node name="CharacterGodiu" type="Area2D"]

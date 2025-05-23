@@ -1,6 +1,6 @@
 [gd_resource type="Resource" load_steps=2 format=3 uid="uid://cav3fkij1jfnn"]
 
-[ext_resource type="Script" path="res://game/characters/godiu/character_godiu_state.gd" id="1_6epsv"]
+[ext_resource type="Script" uid="uid://b7ch3gks5rde6" path="res://game/characters/godiu/character_godiu_state.gd" id="1_6epsv"]
 
 [resource]
 resource_name = "Godiu"

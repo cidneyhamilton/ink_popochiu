@@ -1,16 +1,16 @@
 [gd_scene load_steps=30 format=3 uid="uid://bpjeipwviy2n3"]
 
 [ext_resource type="Theme" uid="uid://dopw00atrn173" path="res://game/gui/resources/gui_theme.tres" id="1_oo5wi"]
-[ext_resource type="Script" path="res://game/gui/components/settings_bar/settings_bar_custom.gd" id="2_wpare"]
+[ext_resource type="Script" uid="uid://cxqmnxmpy8rte" path="res://game/gui/components/settings_bar/settings_bar_custom.gd" id="2_wpare"]
 [ext_resource type="Texture2D" uid="uid://d3xjmwtiol7oa" path="res://game/gui/components/settings_bar/images/btn_save.png" id="3_edygj"]
-[ext_resource type="Script" path="res://game/gui/components/settings_bar/buttons/settings_bar_button_custom.gd" id="4_fc4m4"]
+[ext_resource type="Script" uid="uid://bualmyr105xsi" path="res://game/gui/components/settings_bar/buttons/settings_bar_button_custom.gd" id="4_fc4m4"]
 [ext_resource type="Texture2D" uid="uid://dvwyu5vq55opu" path="res://game/gui/components/settings_bar/images/btn_load.png" id="5_ci6cn"]
-[ext_resource type="Script" path="res://game/gui/components/settings_bar/buttons/btn_load_custom.gd" id="6_8dmmu"]
+[ext_resource type="Script" uid="uid://cjuy2q6lxq5db" path="res://game/gui/components/settings_bar/buttons/btn_load_custom.gd" id="6_8dmmu"]
 [ext_resource type="Texture2D" uid="uid://ffmc7e5lvog0" path="res://game/gui/components/settings_bar/images/btn_text.png" id="7_eeba6"]
 [ext_resource type="Texture2D" uid="uid://bclj3b7sgqoi2" path="res://game/gui/components/settings_bar/images/btn_audio.png" id="8_n0qcr"]
 [ext_resource type="Texture2D" uid="uid://c6d1qhpm2djjd" path="res://game/gui/components/settings_bar/images/btn_dialog_history.png" id="9_t3ihi"]
-[ext_resource type="Texture2D" uid="uid://cxpcw7xvcjcfy" path="res://game/gui/components/settings_bar/images/btn_quit.png" id="10_5hnsr"]
-[ext_resource type="Script" path="res://game/gui/components/settings_bar/buttons/btn_quit_custom.gd" id="11_5tqqh"]
+[ext_resource type="Texture2D" uid="uid://cxpcw7xvcjcfy" path="res://addons/popochiu/engine/objects/gui/components/settings_bar/images/btn_quit.png" id="10_5hnsr"]
+[ext_resource type="Script" uid="uid://btd1cdj7wo4x1" path="res://game/gui/components/settings_bar/buttons/btn_quit_custom.gd" id="11_5tqqh"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_mnuax"]
 atlas = ExtResource("3_edygj")

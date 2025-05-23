@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://bvyhk57ww0yoq"]
 
 [ext_resource type="Theme" uid="uid://dopw00atrn173" path="res://game/gui/resources/gui_theme.tres" id="1_w3kb2"]
-[ext_resource type="Script" path="res://game/gui/components/system_text/system_text_custom.gd" id="2_b50ic"]
+[ext_resource type="Script" uid="uid://luh6dnou3fkv" path="res://game/gui/components/system_text/system_text_custom.gd" id="2_b50ic"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4eue6"]
 content_margin_left = 8.0

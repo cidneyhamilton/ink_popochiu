@@ -1,7 +1,7 @@
 [gd_scene load_steps=12 format=3 uid="uid://blqup6u7tqfnp"]
 
 [ext_resource type="Theme" uid="uid://dopw00atrn173" path="res://game/gui/resources/gui_theme.tres" id="1_stpb7"]
-[ext_resource type="Script" path="res://game/gui/components/popups/history_popup/history_popup_custom.gd" id="2_4aeij"]
+[ext_resource type="Script" uid="uid://cvjtu7r77b6d7" path="res://game/gui/components/popups/history_popup/history_popup_custom.gd" id="2_4aeij"]
 [ext_resource type="PackedScene" uid="uid://ull1ml85e5cd" path="res://game/gui/components/popups/history_popup/components/dialog_line.tscn" id="3_su5v0"]
 [ext_resource type="PackedScene" uid="uid://dfpfsexjd35rt" path="res://game/gui/components/popups/history_popup/components/interaction_line.tscn" id="4_067yy"]
 [ext_resource type="StyleBox" uid="uid://cv08ljk7gc4g4" path="res://game/gui/components/popups/popochiu_popup_panel_container.tres" id="5_cfib2"]

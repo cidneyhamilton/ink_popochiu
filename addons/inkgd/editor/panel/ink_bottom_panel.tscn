@@ -1,11 +1,11 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=2 format=3 uid="uid://hywfejyibbi8"]
 
-[ext_resource path="res://addons/inkgd/editor/panel/ink_bottom_panel.gd" type="Script" id=1]
+[ext_resource type="Script" uid="uid://ds0ndod053vb" path="res://addons/inkgd/editor/panel/ink_bottom_panel.gd" id="1"]
 
 [node name="Control" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-script = ExtResource( 1 )
+script = ExtResource("1")
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -13,7 +13,7 @@ __meta__ = {
 [node name="TabContainer" type="TabContainer" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
-custom_minimum_size = Vector2( 0, 428.75 )
+custom_minimum_size = Vector2(0, 428.75)
 size_flags_vertical = 3
 tab_alignment = 0
 drag_to_rearrange_enabled = true
@@ -37,7 +37,7 @@ __meta__ = {
 }
 
 [node name="LinkButton" type="LinkButton" parent="MarginContainer"]
-self_modulate = Color( 1, 1, 1, 0.647059 )
+self_modulate = Color(1, 1, 1, 0.647059)
 offset_left = 1887.0
 offset_top = 5.0
 offset_right = 1915.0

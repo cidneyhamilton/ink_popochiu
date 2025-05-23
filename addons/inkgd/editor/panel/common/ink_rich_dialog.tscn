@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=2 format=3 uid="uid://bqy5d8ie3gqce"]
 
-[ext_resource path="res://addons/inkgd/editor/panel/common/ink_rich_dialog.gd" type="Script" id=1]
+[ext_resource type="Script" uid="uid://dt368m4qr5vxo" path="res://addons/inkgd/editor/panel/common/ink_rich_dialog.gd" id="1"]
 
 [node name="Window" type="Window"]
 anchor_left = 0.5
@@ -11,10 +11,10 @@ offset_left = -250.0
 offset_top = -150.0
 offset_right = 250.0
 offset_bottom = 150.0
-custom_minimum_size = Vector2( 500, 300 )
+custom_minimum_size = Vector2(500, 300)
 window_title = "Error"
 resizable = true
-script = ExtResource( 1 )
+script = ExtResource("1")
 __meta__ = {
 "_edit_use_anchors_": false
 }

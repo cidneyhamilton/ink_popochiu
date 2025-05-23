@@ -1,6 +1,6 @@
 [gd_resource type="Resource" load_steps=2 format=3 uid="uid://c1ak078s3t7qv"]
 
-[ext_resource type="Script" path="res://game/rooms/101/room_101_state.gd" id="1_iggrk"]
+[ext_resource type="Script" uid="uid://c6i1xkoc8nxqv" path="res://game/rooms/101/room_101_state.gd" id="1_iggrk"]
 
 [resource]
 resource_name = "101"

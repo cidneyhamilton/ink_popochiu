@@ -1,6 +1,6 @@
 [gd_resource type="Resource" load_steps=2 format=3 uid="uid://b18fxxpimpi5g"]
 
-[ext_resource type="Script" path="res://game/characters/popsy/character_popsy_state.gd" id="1_bg4ej"]
+[ext_resource type="Script" uid="uid://br0u8g3lx5a01" path="res://game/characters/popsy/character_popsy_state.gd" id="1_bg4ej"]
 
 [resource]
 resource_name = "Popsy"

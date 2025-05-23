@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=2 format=3 uid="uid://4ox8wi4ms2si"]
 
-[ext_resource path="res://addons/inkgd/editor/panel/common/ink_progress_dialog.gd" type="Script" id=1]
+[ext_resource type="Script" uid="uid://bfixr0fr1j5mn" path="res://addons/inkgd/editor/panel/common/ink_progress_dialog.gd" id="1"]
 
 [node name="InkProgressDialog" type="Popup"]
 anchor_left = 0.5
@@ -11,8 +11,8 @@ offset_left = -250.0
 offset_top = -42.5
 offset_right = 250.0
 offset_bottom = 42.5
-custom_minimum_size = Vector2( 500, 85 )
-script = ExtResource( 1 )
+custom_minimum_size = Vector2(500, 85)
+script = ExtResource("1")
 __meta__ = {
 "_edit_use_anchors_": false
 }

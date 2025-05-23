@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://d0j4r10rgi32a"]
 
-[ext_resource type="Script" path="res://game/characters/popsy/character_popsy.gd" id="1_7ouh0"]
+[ext_resource type="Script" uid="uid://cat678j7i5nh0" path="res://game/characters/popsy/character_popsy.gd" id="1_7ouh0"]
 [ext_resource type="Texture2D" uid="uid://brcovhsueo18c" path="res://game/characters/popsy/popsy.png" id="2_tdakt"]
 
 [node name="CharacterPopsy" type="Area2D"]

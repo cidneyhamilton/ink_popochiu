@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://eed2olekx48l"]
 
 [ext_resource type="Theme" uid="uid://dopw00atrn173" path="res://game/gui/resources/gui_theme.tres" id="1_42unm"]
-[ext_resource type="Script" path="res://game/gui/components/dialog_menu/dialog_menu_option/dialog_menu_option_custom.gd" id="2_cwyi4"]
+[ext_resource type="Script" uid="uid://bwvio0gmql5qg" path="res://game/gui/components/dialog_menu/dialog_menu_option/dialog_menu_option_custom.gd" id="2_cwyi4"]
 [ext_resource type="FontFile" uid="uid://7oqw6fp32rrt" path="res://game/gui/fonts/monkeyisland_1991.ttf" id="3_p8j16"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_un1pr"]

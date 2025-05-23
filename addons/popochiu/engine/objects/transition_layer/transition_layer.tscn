@@ -1,6 +1,6 @@
 [gd_scene load_steps=9 format=3 uid="uid://b1pvo43ed3eey"]
 
-[ext_resource type="Script" path="res://addons/popochiu/engine/objects/transition_layer/transition_layer.gd" id="1"]
+[ext_resource type="Script" uid="uid://4mpqj5m5dy03" path="res://addons/popochiu/engine/objects/transition_layer/transition_layer.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://idhocibii42k" path="res://addons/popochiu/engine/objects/transition_layer/images/bg.png" id="2"]
 
 [sub_resource type="Animation" id="5"]
@@ -289,11 +289,11 @@ tracks/2/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_vskw8"]
 _data = {
-"RESET": SubResource("5"),
-"fade_in": SubResource("1"),
-"fade_out": SubResource("2"),
-"pass_down_in": SubResource("3"),
-"pass_down_out": SubResource("4")
+&"RESET": SubResource("5"),
+&"fade_in": SubResource("1"),
+&"fade_out": SubResource("2"),
+&"pass_down_in": SubResource("3"),
+&"pass_down_out": SubResource("4")
 }
 
 [node name="TransitionLayer" type="Node2D"]
