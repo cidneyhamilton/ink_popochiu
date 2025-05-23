@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3 uid="uid://wd748u1vdybq"]
 
-[ext_resource type="Script" uid="uid://s5jdc3fyppof" path="res://addons/popochiu/editor/canvas_editor_menu/popochiu_canvas_editor_menu.gd" id="1_vs7c6"]
+[ext_resource type="Script" path="res://addons/popochiu/editor/canvas_editor_menu/popochiu_canvas_editor_menu.gd" id="1_vs7c6"]
 [ext_resource type="Texture2D" uid="uid://b3sku5v1n23ni" path="res://addons/popochiu/icons/btn_baseline.svg" id="2_w3cau"]
 [ext_resource type="Texture2D" uid="uid://dmt2epjmlpv56" path="res://addons/popochiu/icons/btn_walk_to_point.svg" id="3_ifql1"]
 [ext_resource type="Texture2D" uid="uid://skjlvpct7ah7" path="res://addons/popochiu/icons/btn_look_at_point.svg" id="4_bge33"]
@@ -20,6 +20,7 @@ vertical_alignment = 1
 
 [node name="BtnBaseline" type="Button" parent="."]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 tooltip_text = "Baseline"
 theme_type_variation = &"FlatButton"
@@ -29,6 +30,7 @@ icon = ExtResource("2_w3cau")
 
 [node name="BtnWalkToPoint" type="Button" parent="."]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 tooltip_text = "Walk-To Point"
 theme_type_variation = &"FlatButton"
@@ -38,7 +40,6 @@ icon = ExtResource("3_ifql1")
 
 [node name="BtnLookAtPoint" type="Button" parent="."]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 tooltip_text = "Look-At Point"
 theme_type_variation = &"FlatButton"
@@ -48,7 +49,6 @@ icon = ExtResource("4_bge33")
 
 [node name="BtnDialogPos" type="Button" parent="."]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 tooltip_text = "Dialog Position"
 theme_type_variation = &"FlatButton"
