@@ -41,6 +41,10 @@ window/stretch/mode="canvas_items"
 
 enabled=PackedStringArray("res://addons/ink_popochiu/plugin.cfg", "res://addons/inkgd/plugin.cfg", "res://addons/popochiu/editor/gizmos/plugin.cfg", "res://addons/popochiu/plugin.cfg")
 
+[ink_popochiu]
+
+story="res://ink/story.ink.json"
+
 [inkgd]
 
 register_templates=true

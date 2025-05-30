@@ -6,19 +6,18 @@ const REGEX_COMMAND = ">>>\\s*(?<command>.+)"
 
 var InkPlayerFactory = preload("res://addons/inkgd/ink_player_factory.gd") as GDScript
 
-# TODO: Interface to specify path to Ink story
-var ink_file = preload("res://ink/story.ink.json")
-
 var _current_story : InkPlayer = InkPlayerFactory.create()
 var _regex_text: RegEx = RegEx.new()
 var _regex_command: RegEx = RegEx.new()
 
 func _ready() -> void:
+	
 	_current_story.loads_in_background = false
 	
 	add_child(_current_story)
-	
-	_current_story.ink_file = ink_file
+
+	var ink_file_path : String = ProjectSettings.get_setting("ink_popochiu/story")
+	_current_story.ink_file = load(ink_file_path)
 	_current_story.create_story()
 
 	_regex_text.compile(REGEX_TEXT)
@@ -42,7 +41,6 @@ func _loaded(successfully: bool):
 			_current_story.observe_variable(variable, self, "_observe_variable")
 			_current_story._story.variables_state.set_variable(variable, Globals.get(variable))
 			# print("Binding variable %s to %s" % [variable, Globals.get(variable)])
-
 
 # Continues the story
 func _continue_story() -> void:
@@ -80,6 +78,11 @@ func _run_command(command: String) -> void:
 # Virtual: can be overridden with custom commands. These are Popochiu's default.
 func _run_command_with_args(command_name: String, command_args: Array) -> void:
 	match command_name:
+		"GOTO_ROOM":
+			var room = command_args[0]
+			# Make sure the player can move during the transition
+			C.player.can_move = true
+			_goto_room(room)
 		"WALK_TO_MARKER":
 			var char_name = command_args[0]
 			var marker_name = command_args[1]
@@ -131,10 +134,15 @@ func _run_command_with_args(command_name: String, command_args: Array) -> void:
 		"ADD_ITEM":
 			var item_name : String = command_args[0]
 			await _add_item(item_name)
+			# Hide prop in room
+			R.current.get_prop(item_name).hide()
 		"WALK_TO_CLICKED":
 			await C.player.walk_to_clicked_blocking()
 		"FACE_CLICKED":
 			await C.player.face_clicked()
+		"CHARACTER_HIDE":
+			var char_name = command_args[0]
+			C.get_character(char_name).hide()
 		_:
 			print("Command not found")
 
@@ -223,6 +231,9 @@ func _remove_item(item_name: String) -> void:
 
 func _wait(duration: float) -> void:
 	await E.wait(duration)
+
+func _goto_room(room_name: String) -> void:
+	R.goto_room(room_name)
 	
 # Update Ink variables from Popochiu globals
 func _sync_ink_variables_from_popochiu() -> void:

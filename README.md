@@ -19,24 +19,40 @@ When writing scripts in Ink, start the line with the character speaking and a co
 Player: Hi there, let's test this out!
 ```
 
-## Popochiu Commands Supported
+Text without a character name will be spoken by the narrator (using G.show_system_text).
 
-C.walk_to_marker
-C.teleport_to_marker
-C.face_up
-C.face_down
-C.fade_left
-C.face_right
-A.play_sfx
-I.add_item
-I.remove_item
+## Templates
+
+Use the provided templates instead of Popochiu's defaults to streamline creation of new props, rooms, characters, and hotspots to use the default interactions.
+
+## Interaction Templates
+
+Currently supports a single-click interface. 
+
+## Popochiu Functions Supported
+
+E.wait
+
+PopochiuAudioCue.play
+PopochiuAudioCue.stop
+
+PopochiuCharacter.face_down
+PopochiuCharacter.fade_left
+PopochiuCharacter.face_right
+PopochiuCharacter.face_up
+PopochiuCharacter.hide
+PopochiuCharacter.play_animation
+PopochiuCharacter.state
+PopochiuCharacter.walk_to_marker
+PopochiuCharacter.teleport_to_marker
+
+PopcohiuInventoryItem.add_item
+PopochiuInventoryItem.remove_item
+
+PopochiuProp.animate
+
+PopochiuRoom.state
+
+R.goto_room
 
 
-## TODO
-
-This plugin is a work in progress.
-
-+ Sync global variables when updated outside Ink
-+ Check for objects in the player's inventory
-+ Better configuration
-+ Specify the ink script name in the configuration.
