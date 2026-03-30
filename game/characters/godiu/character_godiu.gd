@@ -73,9 +73,14 @@ func _play_grab() -> void:
 
 
 # Called when the character stops moving
-func _on_move_ended() -> void:
+func _on_movement_ended() -> void:
 	pass
 
+
+
+# Called when the character starts moving
+func _on_movement_started() -> void:
+	pass
 
 #endregion
 

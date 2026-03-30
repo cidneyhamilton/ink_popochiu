@@ -6,9 +6,9 @@ This is inspired by Graham Hayes' [AC-Ink-Integration](https://github.com/Graham
 
 ## Requirements
 
-+ [Godot 4.5](https://godotengine.org/)
++ [Godot 4.6](https://godotengine.org/)
 + [inkGD](https://github.com/ephread/inkgd)
-+ [Popochiu 2](https://github.com/mapedorr/popochiu)
++ [Popochiu 2.1](https://github.com/mapedorr/popochiu)
 + [Ink](https://github.com/inkle/ink)
 
 ## Writing Dialog

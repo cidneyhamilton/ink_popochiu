@@ -8,26 +8,31 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="ink_popochiu_godot4"
 run/main_scene="res://game/rooms/101/room_101.tscn"
-config/features=PackedStringArray("4.5", "Forward Plus")
+config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
-Globals="*res://game/popochiu_globals.gd"
-Cursor="*res://addons/popochiu/engine/cursor/cursor.tscn"
-E="*res://addons/popochiu/engine/popochiu.tscn"
-R="*res://game/autoloads/r.gd"
-C="*res://game/autoloads/c.gd"
-I="*res://game/autoloads/i.gd"
-D="*res://game/autoloads/d.gd"
-A="*res://game/autoloads/a.gd"
-G="*res://addons/popochiu/engine/interfaces/i_graphic_interface.gd"
+Globals="*uid://7tbvtsc5tyn7"
+Cursor="*uid://c2pqh7ajiuiy0"
+E="*uid://rda8wggldt5o"
+R="*uid://clhxo71hqkj8"
+C="*uid://da51kf1hj21v8"
+I="*uid://dwwkidndow4ks"
+D="*uid://c6d8w0ritppg1"
+A="*uid://c0p0c3ntrelpw"
+G="*uid://blk6nfpfiqrd2"
 InkRuntime="*res://addons/inkgd/ink_runtime.gd"
 Bridge="*res://addons/ink_popochiu/ink_popochiu.gd"
+T="*uid://30lm6k5s368s"
 
 [display]
 
@@ -39,7 +44,7 @@ window/stretch/mode="canvas_items"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/ink_popochiu/plugin.cfg", "res://addons/inkgd/plugin.cfg", "res://addons/popochiu/editor/gizmos/plugin.cfg", "res://addons/popochiu/plugin.cfg")
+enabled=PackedStringArray("res://addons/ink_popochiu/plugin.cfg", "res://addons/inkgd/plugin.cfg", "res://addons/popochiu/editor/gizmos/plugin.cfg", "res://addons/popochiu/editor/importers/plugin.cfg", "res://addons/popochiu/plugin.cfg")
 
 [ink_popochiu]
 
