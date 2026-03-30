@@ -48,7 +48,7 @@ enabled=PackedStringArray("res://addons/ink_popochiu/plugin.cfg", "res://addons/
 
 [ink_popochiu]
 
-story="res://ink/story.ink.json"
+story="res://ink/ink.story.json"
 
 [inkgd]
 

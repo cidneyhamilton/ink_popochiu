@@ -4,7 +4,6 @@ extends Node
 const REGEX_TEXT = "^(?<character>[\\w]+):\\s*(?<text>.+)"
 const REGEX_COMMAND = ">>>\\s*(?<command>.+)"
 
-
 var InkPlayerFactory = preload("res://addons/inkgd/ink_player_factory.gd") as GDScript
 
 var _current_story : InkPlayer = InkPlayerFactory.create()

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://yucl8f3ur331"]
+[gd_scene format=3 uid="uid://yucl8f3ur331"]
 
 [ext_resource type="Script" uid="uid://cdc833001eem0" path="res://game/rooms/101/room_101.gd" id="1_cik3a"]
 [ext_resource type="PackedScene" uid="uid://blp5ger3abkuj" path="res://game/rooms/101/props/background/prop_background.tscn" id="2_2gi35"]
@@ -7,34 +7,35 @@
 [ext_resource type="PackedScene" uid="uid://d0j4r10rgi32a" path="res://game/characters/popsy/character_popsy.tscn" id="5_boug4"]
 [ext_resource type="PackedScene" uid="uid://10otde7wdetf" path="res://game/characters/godiu/character_godiu.tscn" id="6_e277f"]
 
-[node name="Room101" type="Node2D"]
+[node name="Room101" type="Node2D" unique_id=1501931200]
 script = ExtResource("1_cik3a")
 script_name = "101"
 width = 320
 height = 180
-popochiu_placeholder = null
 
-[node name="WalkableAreas" type="Node2D" parent="."]
+[node name="WalkableAreas" type="Node2D" parent="." unique_id=695640849]
 
-[node name="Floor" parent="WalkableAreas" instance=ExtResource("2_5845o")]
+[node name="Floor" parent="WalkableAreas" unique_id=145179620 instance=ExtResource("2_5845o")]
 
-[node name="Props" type="Node2D" parent="."]
+[node name="Props" type="Node2D" parent="." unique_id=1227951482]
 
-[node name="Background" parent="Props" instance=ExtResource("2_2gi35")]
+[node name="Background" parent="Props" unique_id=781843276 instance=ExtResource("2_2gi35")]
 position = Vector2(160, 90)
 texture = ExtResource("3_r53fr")
 interaction_polygon = PackedVector2Array(-12, -12, 12, -12, 12, 12, -12, 12)
 
-[node name="Hotspots" type="Node2D" parent="."]
+[node name="Hotspots" type="Node2D" parent="." unique_id=1420900926]
 
-[node name="Regions" type="Node2D" parent="."]
+[node name="Regions" type="Node2D" parent="." unique_id=579579463]
 
-[node name="Markers" type="Node2D" parent="."]
+[node name="Markers" type="Node2D" parent="." unique_id=451177619]
 
-[node name="Characters" type="Node2D" parent="."]
+[node name="Characters" type="Node2D" parent="." unique_id=2091300828]
 
-[node name="CharacterPopsy *" parent="Characters" instance=ExtResource("5_boug4")]
+[node name="CharacterPopsy *" parent="Characters" unique_id=1792852843 instance=ExtResource("5_boug4")]
 position = Vector2(238, 125)
+metadata/EDITOR_TMP_COPY_OF = "Popsy"
 
-[node name="CharacterGodiu *" parent="Characters" instance=ExtResource("6_e277f")]
+[node name="CharacterGodiu *" parent="Characters" unique_id=1861984905 instance=ExtResource("6_e277f")]
 position = Vector2(90, 142)
+metadata/EDITOR_TMP_COPY_OF = "Godiu"
