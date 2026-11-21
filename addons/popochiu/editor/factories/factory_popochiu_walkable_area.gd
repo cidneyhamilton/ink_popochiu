@@ -9,6 +9,7 @@ func _init() -> void:
 	_type_method = PopochiuEditorHelper.is_walkable_area
 	_obj_room_group = "WalkableAreas"
 	_path_template = "/walkable_areas/%s/walkable_area_%s"
+	_register_for_translation = false
 
 
 #endregion
@@ -59,7 +60,7 @@ func create(param: PopochiuWalkableAreaFactoryParam) -> int:
 
 	# Show the WA perimeter, depending on user prefs
 	perimeter.visible = PopochiuEditorConfig.get_editor_setting(
-		PopochiuEditorConfig.GIZMOS_ALWAYS_SHOW_WA
+		PopochiuEditorConfig.GIZMOS_POLY_ENABLE_UNSELECTED_WA
 	)
 
 	# Save the scene (.tscn) and put it into _scene class property

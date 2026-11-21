@@ -1,6 +1,6 @@
 # @popochiu-docs-category game-objects
 @tool
-@icon('res://addons/popochiu/icons/character.png')
+@icon('res://addons/popochiu/icons/character.svg')
 class_name PopochiuCharacter
 extends PopochiuClickable
 ## Represents a character in the game that can move, talk, and interact with objects.
@@ -51,7 +51,17 @@ signal obstacle_state_changed(character: PopochiuCharacter)
 ## Emitted during movement when the character's position changes.
 ## Only emitted while the character is moving and the position has actually changed from the last emission.
 signal position_updated(character: PopochiuCharacter, current_position: Vector2)
+## Emitted when this character's movement is interrupted because it tried to enter a
+## [PopochiuRegion] with [member PopochiuRegion.walkable] set to [code]false[/code].
+signal blocked_by_region(region: PopochiuRegion)
 
+## Emitted when an item with [param quantity] is added to this character's inventory.
+signal inventory_item_added(item: PopochiuInventoryItem, quantity: int)
+## Emitted when an item with [param quantity] is removed from this character's inventory.
+signal inventory_item_removed(item: PopochiuInventoryItem, quantity: int)
+## Emitted when the quantity of [param item] changes in this character's inventory
+## without being added or removed entirely.
+signal inventory_item_quantity_updated(item: PopochiuInventoryItem, old_quantity: int, new_quantity: int)
 
 ## Empty string constant to perform type checks (String is not nullable in GDScript. See #381, #382).
 const EMPTY_STRING = ""
@@ -61,6 +71,10 @@ const STANDARD_IDLE_ANIMATION = "idle"
 const STANDARD_WALK_ANIMATION = "walk"
 ## Standard talk animation name.
 const STANDARD_TALK_ANIMATION = "talk"
+## Distance in pixels to pull back from a blocking region boundary when trimming the navigation
+## path. Prevents boundary-precision issues with Geometry2D.is_point_in_polygon() on subsequent
+## clicks. See #521.
+const BLOCKING_REGION_PULLBACK = 2.0
 
 
 ## The [Color] in which the dialogue lines of the character are rendered.
@@ -106,8 +120,10 @@ const STANDARD_TALK_ANIMATION = "talk"
 ## You can use this to define which [Texture] to use as avatar for the character when it speaks
 ## using a specific emotion.
 @export var avatars := []: set = set_avatars
-## The speed at which the character will move in pixels per frame.
-@export var walk_speed := 200.0
+## The speed at which the character will move in pixels per frame.[br]
+## Values must be strictly greater than [code]0[/code]. Assigning [code]0[/code] or a negative
+## value will be clamped to [code]1.0[/code] and an error will be logged.
+@export var walk_speed := 200.0: set = set_walk_speed
 ## Whether the character can or not move.
 @export var can_move := true
 ## Whether the character ignores or not walkable areas. If [code]true[/code], the character will move
@@ -116,6 +132,22 @@ const STANDARD_TALK_ANIMATION = "talk"
 ## Whether the character ignores or not obstacles in walkable areas. If [code]true[/code], the character will
 ## move within a walkable area, ignoring obstacle polygons that might block the path.
 @export var ignore_obstacles := false
+## Whether the character can walk through [PopochiuRegion]s with [member PopochiuRegion.walkable]
+## set to [code]false[/code]. When [code]true[/code], blocking regions will not interrupt movement.
+@export var ignore_blocking_regions := false
+## Whether the character ignores scale changes applied by [PopochiuRegion]s.
+## When [code]true[/code], the character will not be scaled when entering or moving through a region
+## that has scaling enabled.
+@export var ignore_region_scaling := false
+## Whether the character ignores tinting applied by [PopochiuRegion]s.
+## When [code]true[/code], the character's modulate will not be changed when entering or exiting
+## a region that defines a [member PopochiuRegion.tint] color.
+@export var ignore_region_tinting := false
+## Whether the character's walk speed is adjusted to match its current perspective scale.
+## When [code]true[/code] (default), the character moves slower when scaled down (far away)
+## and faster when scaled up (close). Set to [code]false[/code] to keep a constant walk speed
+## regardless of scale.
+@export var scaling_adjust_speed := true
 ## Whether the character will move only when the frame changes on its animation.
 @export var anti_glide_animation: bool = false
 ## When true, this character will be considered an obstacle and its obstacle polygon (if available)
@@ -127,7 +159,8 @@ const STANDARD_TALK_ANIMATION = "talk"
 @export var dialog_pos: Vector2
 ## Offset from the character's dialog_pos. Added to the normal dialog position.
 var dialog_pos_offset: Vector2 = Vector2.ZERO
-## Absolute world coordinates for dialog position. Overrides dialog_pos entirely when not set.
+## Position that replaces the character's dialog_pos entirely when not set.
+## Expressed in the character's local space, like [member dialog_pos].
 ## By convention `Vector2.INF` means "unset" (instead of using Vector2.ZERO which is a valid position).
 var dialog_pos_override: Vector2 = Vector2.INF
 ## The root name for idle animations. Directional suffixes will be added automatically.
@@ -149,9 +182,12 @@ var anim_suffix := EMPTY_STRING
 var emotion := EMPTY_STRING
 ##
 var scaling_region: Dictionary = {}
-## Stores the default walk speed defined in [member walk_speed]. Used by [PopochiuRoom] when scaling
-## the character if it is inside a [PopochiuRegion] that modifies the scale.
-var default_walk_speed := 0
+## A temporary walk speed override. When strictly greater than [code]0[/code], replaces
+## [member walk_speed] as the base speed for movement, while perspective scaling from
+## [PopochiuRegion]s is still applied on top.[br]
+## Call [method reset_walk_speed] (or set to [code]0.0[/code]) to deactivate the override.[br]
+## Negative values are rejected and clamped to [code]0.0[/code] (no override) with a warning.
+var walk_speed_override: float = 0.0: set = set_walk_speed_override
 ## Stores the default scale. Used by [PopochiuRoom] when scaling the character if it is inside a
 ## [PopochiuRegion] that modifies the scale.
 var default_scale := Vector2.ONE
@@ -171,6 +207,15 @@ var is_visible_in_room: bool: get = get_is_visible_in_room
 ## Returns the current animation being played. Read-only access to [member _current_animation].
 ## This property cannot be set from outside the character implementation.
 var current_animation: String: get = get_current_animation
+## The effective walk speed for the current frame. Combines [member walk_speed] (or
+## [member walk_speed_override] if active) with the perspective scale factor from the current
+## [PopochiuRegion]. Read-only.
+var current_walk_speed: float: get = get_current_walk_speed
+## Dictionary containing this character's inventory items. The key is the item's
+## [member PopochiuInventoryItem.script_name] and the value is the [PopochiuInventoryItem]
+## instance. Use the methods in [PopochiuIInventory] (singleton [b]I[/b]) or the convenience
+## methods on this character to manage inventory.
+var inventory: Dictionary = {}
 ## Opacity of the character. Range: [code]0.0[/code] (fully transparent) to [code]1.0[/code] (fully opaque).
 ## Setting this value will modulate the alpha channel of the [b]$Sprite2D[/b] child.
 @export_range(0.0, 1.0) var alpha: float = 1.0: set = set_alpha
@@ -208,7 +253,7 @@ var _valid_animation_suffixes = [
 ['_ur', '_ul', '_r', '_l', '_u']] # UP_RIGHT (292.5 - 337.5 degrees)
 # Navigation path for this character's current movement
 var _navigation_path := PackedVector2Array()
-# The stored position of the character. Used when anti_glide_animation is true.
+# The logical position used by navigation and anti-glide rendering.
 var _buffered_position = null
 # Whether the dialog position is locked to a specific screen position.
 var _is_dialog_pos_locked: bool = false
@@ -223,6 +268,12 @@ var _current_faced_character: PopochiuCharacter = null
 # Tracks the last position where position_updated signal was emitted.
 # Used to throttle signal emissions and only emit when position actually changes.
 var _last_emitted_position: Vector2 = Vector2.INF
+# Perspective scale factor from the current scaling region. Updated by update_scale().
+# 1.0 outside any region.
+var _walk_scale_factor: float = 1.0
+# The non-walkable region that caused path trimming on the current walk. Set by
+# _trim_path_at_blocking_regions() and cleared after signals are emitted at movement end.
+var _pending_blocking_region: PopochiuRegion = null
 
 @onready var interaction_polygon_node: CollisionPolygon2D = $InteractionPolygon
 @onready var scaling_polygon: CollisionPolygon2D = $ScalingPolygon
@@ -230,10 +281,9 @@ var _last_emitted_position: Vector2 = Vector2.INF
 
 
 #region Godot ######################################################################################
-func _ready():
+func _ready() -> void:
 	super()
 
-	default_walk_speed = walk_speed
 	default_scale = Vector2(scale)
 
 	if Engine.is_editor_hint():
@@ -255,6 +305,10 @@ func _ready():
 	# Connect movement signals to virtual methods
 	movement_started.connect(_on_movement_started)
 	movement_ended.connect(_on_movement_ended)
+	
+	# #521: Route the blocked_by_region signal to the virtual override so game scripts
+	# can react without manually connecting in every character script.
+	blocked_by_region.connect(_on_blocked_by_region)
 
 	# Connect to own movement signals to handle navigation internally
 	if not started_walk_to.is_connected(_update_navigation_path):
@@ -301,7 +355,7 @@ func _ready():
 func _physics_process(delta: float) -> void:
 	if _navigation_path.is_empty(): return
 
-	var walk_distance: float = walk_speed * delta
+	var walk_distance: float = current_walk_speed * delta
 	_move_along_path(walk_distance)
 
 
@@ -338,8 +392,8 @@ func _play_idle() -> void:
 ## the base functionality.
 func _play_walk(target_pos: Vector2) -> void:
 	# Set the default parameters for play_animation()
-	var animation_label = walk_animation
-	var animation_fallback = idle_animation
+	var animation_label := walk_animation
+	var animation_fallback := idle_animation
 
 	play_animation(animation_label, animation_fallback)
 
@@ -367,6 +421,14 @@ func _on_movement_started() -> void:
 ## Called when the character stops moving. Override to add custom behavior such as
 ## triggering events or updating game state.
 func _on_movement_ended() -> void:
+	pass
+
+
+## Called when this character's movement is interrupted because it tried to enter a
+## [PopochiuRegion] with [member PopochiuRegion.walkable] set to [code]false[/code].[br]
+## Override in the character's game script to react to the event (e.g. play a sound, show a
+## message). [param region] is the [PopochiuRegion] that blocked the character.
+func _on_blocked_by_region(_region: PopochiuRegion) -> void:
 	pass
 
 
@@ -412,6 +474,10 @@ func queue_idle() -> Callable:
 ## Puts the character in idle state, playing its idle animation and flipping the sprite
 ## based on [member flips_when].
 func idle() -> void:
+	# Outside the tree get_tree() is null, so any await here would crash. See #552.
+	if not is_inside_tree():
+		return
+
 	if PopochiuUtils.e.cutscene_skipped:
 		await get_tree().process_frame
 		return
@@ -438,20 +504,22 @@ func queue_walk(target_pos: Vector2) -> Callable:
 ## Makes the character walk to [param target_pos], playing its walk animation and flipping
 ## the sprite based on [member flips_when].
 func walk(target_pos: Vector2) -> void:
+	var start_position := get_buffered_position()
+
 	is_moving = true
 	movement_started.emit()
 	_last_reached_clickable = null
 
 	_flip_left_right(
-		target_pos.x < position.x,
-		target_pos.x > position.x
+		target_pos.x < start_position.x,
+		target_pos.x > start_position.x
 	)
 
 	if PopochiuUtils.e.cutscene_skipped:
 		is_moving = false
 		await get_tree().process_frame
 
-		position = target_pos
+		_set_position_state(target_pos)
 		PopochiuUtils.e.camera.position = target_pos
 		await get_tree().process_frame
 
@@ -461,7 +529,7 @@ func walk(target_pos: Vector2) -> void:
 	_play_walk(target_pos)
 
 	# Trigger the signal to start moving the character
-	started_walk_to.emit(self, position, target_pos)
+	started_walk_to.emit(self, start_position, target_pos)
 	await movement_ended
 
 	is_moving = false
@@ -486,6 +554,11 @@ func queue_stop_walking() -> Callable:
 
 ## Stops the character's movement and emits [signal stopped_walk].
 func stop_walking() -> void:
+	# Outside the tree get_tree() is null, so emitting stopped_walk and awaiting would crash.
+	# See #552.
+	if not is_inside_tree():
+		return
+
 	is_moving = false
 
 	stopped_walk.emit()
@@ -608,6 +681,10 @@ func queue_face_clicked() -> Callable:
 ## Makes the character face the last clicked [PopochiuClickable] stored in
 ## [member Popochiu.clicked].
 func face_clicked() -> void:
+	if not is_instance_valid(PopochiuUtils.e.clicked):
+		await get_tree().process_frame
+		return
+
 	var global_lap = PopochiuUtils.e.clicked.to_global(PopochiuUtils.e.clicked.look_at_point)
 
 	_flip_left_right(
@@ -641,26 +718,27 @@ func face_away() -> void:
 	await idle()
 
 
-## Makes the character say [param dialog], optionally with emotion [param emo].
-## Plays the talk animation and an optional voice cue if defined for the emotion.
+## Makes the character say [param dialog] with optional interpolation [param params].
+## Translates the dialog line, then applies format parameters if provided ([Array] for
+## [code]%[/code]-style, [Dictionary] for [method String.format]-style).
+## Plays the talk animation and an optional voice cue if defined for the current [member emotion].
 ## Emits [signal PopochiuICharacter.character_spoke] that carries the character and the dialog line.
 ## [i]This method is intended to be used inside a [method Popochiu.queue] of instructions.[/i]
-func queue_say(dialog: String, emo := EMPTY_STRING) -> Callable:
-	return func(): await say(dialog, emo)
+func queue_say(dialog: String, params: Variant = null) -> Callable:
+	return func(): await say(dialog, params)
 
 
-## Makes the character say [param dialog], optionally with emotion [param emo].
-## Plays the talk animation and an optional voice cue if defined for the emotion.
+## Makes the character say [param dialog] with optional interpolation [param params].
+## Translates the dialog line, then applies format parameters if provided ([Array] for
+## [code]%[/code]-style, [Dictionary] for [method String.format]-style).
+## Plays the talk animation and an optional voice cue if defined for the current [member emotion].
 ## Emits [signal PopochiuICharacter.character_spoke] that carries the character and the dialog line.
-func say(dialog: String, emo := EMPTY_STRING) -> void:
+func say(dialog: String, params: Variant = null) -> void:
 	if PopochiuUtils.e.cutscene_skipped:
 		await get_tree().process_frame
 		return
 
 	_is_talking = true
-
-	if not emo.is_empty():
-		emotion = emo
 
 	# Call the virtual that plays the talk animation
 	_play_talk()
@@ -669,7 +747,11 @@ func say(dialog: String, emo := EMPTY_STRING) -> void:
 	if not vo_name.is_empty() and PopochiuUtils.a.get(vo_name):
 		PopochiuUtils.a[vo_name].play(false, global_position)
 
-	PopochiuUtils.c.character_spoke.emit(self, dialog)
+	# Trigger the signal to show the dialog line in the GUI
+	PopochiuUtils.c.character_spoke.emit(
+		self,
+		PopochiuUtils.e.translate(dialog, params)
+	)
 
 	await PopochiuUtils.g.dialog_line_finished
 
@@ -678,9 +760,18 @@ func say(dialog: String, emo := EMPTY_STRING) -> void:
 	if not vo_name.is_empty() and PopochiuUtils.a[vo_name].is_playing():
 		PopochiuUtils.a[vo_name].stop(0.3)
 
-	emotion = EMPTY_STRING
 	_is_talking = false
 	idle()
+
+
+## Interrupts the character's current dialog line, if any.
+## Hides the dialog text immediately and unblocks any [method say] coroutine waiting on it.
+## Has no effect when the character is not currently talking.
+## This does not exit an active [PopochiuDialog] tree.
+func stop_talking() -> void:
+	if not _is_talking:
+		return
+	PopochiuUtils.c.character_stopped_talking.emit(self)
 
 
 ## Plays the grab animation and waits for [signal grab_done], then returns to idle.
@@ -729,6 +820,10 @@ func queue_walk_to_clicked(offset := Vector2.ZERO) -> Callable:
 ## You can set an [param offset] relative to the target position.[br]
 ## If the user clicks elsewhere during the walk, the action is cancelled.
 func walk_to_clicked(offset := Vector2.ZERO) -> void:
+	if not is_instance_valid(PopochiuUtils.e.clicked):
+		await get_tree().process_frame
+		return
+
 	var clicked_id: String = PopochiuUtils.e.clicked.script_name
 
 	if PopochiuUtils.e.clicked == _last_reached_clickable:
@@ -865,7 +960,7 @@ func queue_play_animation(
 
 ## Plays the [param animation_label] animation, falling back to [param animation_fallback]
 ## if not found.
-func play_animation(animation_label: String, animation_fallback := ""):
+func play_animation(animation_label: String, animation_fallback := "") -> void:
 	# Use idle_animation as default fallback if none provided
 	if animation_fallback.is_empty():
 		animation_fallback = idle_animation
@@ -907,12 +1002,12 @@ func play_animation(animation_label: String, animation_fallback := ""):
 ## Stops the current looping animation (except idle) after its current loop finishes.
 ##
 ## [i]This method is intended to be used inside a [method Popochiu.queue] of instructions.[/i]
-func queue_stop_animation():
+func queue_stop_animation() -> Callable:
 	return func(): await stop_animation()
 
 
 ## Stops the current looping animation (except idle) after its current loop finishes.
-func stop_animation():
+func stop_animation() -> void:
 	# If the animation is not looping or is an idle one, do nothing
 	if (
 		animation_player.get_animation(
@@ -936,36 +1031,36 @@ func stop_animation():
 ## Immediately stops the current animation and switches to idle.
 ##
 ## [i]This method is intended to be used inside a [method Popochiu.queue] of instructions.[/i]
-func queue_halt_animation():
+func queue_halt_animation() -> Callable:
 	return func(): halt_animation()
 
 
 ## Immediately stops the current animation and switches to idle.
-func halt_animation():
+func halt_animation() -> void:
 	_play_idle()
 
 
 ## Pauses the current animation.
 ##
 ## [i]This method is intended to be used inside a [method Popochiu.queue] of instructions.[/i]
-func queue_pause_animation():
+func queue_pause_animation() -> Callable:
 	return func(): pause_animation()
 
 
 ## Pauses the current animation.
-func pause_animation():
+func pause_animation() -> void:
 	animation_player.pause()
 
 
 ## Resumes the paused animation.
 ##
 ## [i]This method is intended to be used inside a [method Popochiu.queue] of instructions.[/i]
-func queue_resume_animation():
+func queue_resume_animation() -> Callable:
 	return func(): resume_animation()
 
 
 ## Resumes the paused animation.
-func resume_animation():
+func resume_animation() -> void:
 	animation_player.play()
 
 
@@ -1071,7 +1166,7 @@ func fade_to(
 
 ## Makes the character look in the direction of [param destination]. The result is one of the values
 ## defined by [enum Looking].
-func face_direction(destination: Vector2):
+func face_direction(destination: Vector2) -> void:
 	# Determine the direction the character is facing.
 	# We cannot use the face_* functions because they reset the state to IDLE.
 	# Get the angle of the vector from the origin to the destination as a number between
@@ -1144,17 +1239,35 @@ func get_dialog_pos() -> float:
 
 
 ## Returns the actual dialog position considering offset, override, and locked state.
-## Always returns position relative to the character.
+## Always returns position relative to the character, in the space of its parent node, so it can
+## be added to [member Node2D.global_position] as is. The character's [member Node2D.scale] is
+## applied to it, because the anchor sits on the sprite: when a [PopochiuRegion] scales the
+## character, the dialog follows it instead of drifting away.
 func get_actual_dialog_pos() -> Vector2:
+	# Fixes #534 (Dialog position wrong when using area based character scaling)
 	if _is_dialog_pos_locked:
-		# Convert locked global position back to local coordinates
-		return to_local(_locked_dialog_pos)
+		# The locked position is a world coordinate: keep it in place, ignoring the current scale.
+		return _locked_dialog_pos - global_position
 
 	if dialog_pos_override != Vector2.INF:
-		return dialog_pos_override
+		return dialog_pos_override * scale
 
 	# If override is unset (Vector2.INF), return base pos + offset
-	return dialog_pos + dialog_pos_offset
+	return (dialog_pos + dialog_pos_offset) * scale
+
+
+## Resets the walk speed override to [code]0.0[/code] (inactive), making the character move at
+## its normal [member walk_speed] again.
+func reset_walk_speed() -> void:
+	walk_speed_override = 0.0
+
+
+## Resets the walk speed override to [code]0.0[/code] (inactive), making the character move at
+## its normal [member walk_speed] again.[br]
+##
+## [i]This method is intended to be used inside a [method Popochiu.queue] of instructions.[/i]
+func queue_reset_walk_speed() -> Callable:
+	return func(): reset_walk_speed()
 
 
 ## Resets the dialog position offset to Vector2.ZERO.
@@ -1169,15 +1282,8 @@ func reset_dialog_pos_override() -> void:
 
 ## Locks the dialog position at the current calculated global position.
 func lock_dialog_pos() -> void:
-	# Calculate current position without using locked state. Respect INF as "unset".
-	var current_pos: Vector2
-	if dialog_pos_override != Vector2.INF:
-		current_pos = dialog_pos_override
-	else:
-		current_pos = dialog_pos + dialog_pos_offset
-
-	# Store as global coordinates
-	_locked_dialog_pos = to_global(current_pos)
+	# Freeze the exact point the GUI renders, i.e. the character position plus the dialog offset.
+	_locked_dialog_pos = global_position + get_actual_dialog_pos()
 	_is_dialog_pos_locked = true
 
 
@@ -1237,6 +1343,11 @@ func sync_buffered_position() -> void:
 ## Updates the scale of the character, depending on the properties of the scaling region
 ## where the character is currently located.
 func update_scale():
+	# #435: Skip scaling when the character opts out of region scaling.
+	if ignore_region_scaling:
+		scale = default_scale
+		_walk_scale_factor = 1.0
+		return
 	if scaling_region:
 		var polygon_range: float = (
 			scaling_region.polygon_bottom_y - scaling_region.polygon_top_y
@@ -1252,10 +1363,10 @@ func update_scale():
 		scale.y = [
 			[scale_for_position, scaling_region.scale_min].max(), scaling_region.scale_max
 		].min()
-		walk_speed = default_walk_speed / default_scale.x * scale_for_position
+		_walk_scale_factor = scale_for_position / default_scale.x
 	else:
 		scale = default_scale
-		walk_speed = default_walk_speed
+		_walk_scale_factor = 1.0
 
 
 ## Resets the animation prefix.
@@ -1264,9 +1375,103 @@ func reset_animation_prefix() -> void:
 	animation_prefix = PopochiuEditorHelper.EMPTY_STRING
 
 
+## Adds [param quantity] of [param item] to this character's inventory and waits until any GUI
+## transition has finished. Delegates to [method PopochiuIInventory.add_item].
+##
+## [i]This method is intended to be used inside a [method Popochiu.queue] of instructions.[/i]
+func queue_add_to_inventory(item: PopochiuInventoryItem, quantity := 1) -> Callable:
+	return func(): await add_to_inventory(item, quantity)
+
+
+## Adds [param quantity] of [param item] to this character's inventory and waits until any GUI
+## transition has finished. Delegates to [method PopochiuIInventory.add_item].
+func add_to_inventory(item: PopochiuInventoryItem, quantity := 1) -> void:
+	await PopochiuUtils.i.add_item(item, quantity, self)
+
+
+## Removes [param quantity] of [param item] from this character's inventory and waits until any GUI
+## transition has finished. Use [code]0[/code] to remove the full stack.
+## Delegates to [method PopochiuIInventory.remove_item].
+##
+## [i]This method is intended to be used inside a [method Popochiu.queue] of instructions.[/i]
+func queue_remove_from_inventory(item: PopochiuInventoryItem, quantity: int = 0) -> Callable:
+	return func(): await remove_from_inventory(item, quantity)
+
+
+## Removes [param quantity] of [param item] from this character's inventory and waits until any GUI
+## transition has finished. Use [code]0[/code] to remove the full stack.
+## Delegates to [method PopochiuIInventory.remove_item].
+func remove_from_inventory(item: PopochiuInventoryItem, quantity: int = 0) -> void:
+	await PopochiuUtils.i.remove_item(item, quantity, self)
+
+
+## Returns [code]true[/code] if the item identified by [param item_name] is in this character's
+## inventory. Equivalent to [method PopochiuIInventory.is_item_in_inventory] with this character.
+func has_inventory_item(item_name: String) -> bool:
+	return PopochiuUtils.i.is_item_in_inventory(item_name, self)
+
+
+## Returns the [PopochiuInventoryItem] instance for [param item_name] from this character's
+## inventory, or [code]null[/code] if not found.
+func get_inventory_item(item_name: String) -> PopochiuInventoryItem:
+	return inventory.get(item_name, null) as PopochiuInventoryItem
+
+
+## Returns the quantity of [param item_name] owned by this character.
+## Returns [code]0[/code] if the item is not in the inventory.
+func get_inventory_quantity(item_name: String) -> int:
+	var item: PopochiuInventoryItem = get_inventory_item(item_name)
+	return item.quantity_owned if is_instance_valid(item) else 0
+
+
+## Returns [code]true[/code] if this character's inventory has reached the limit configured in
+## project settings.
+func is_inventory_full() -> bool:
+	return PopochiuUtils.i.is_full(self)
+
+
+## Removes all items from this character's inventory triggering the full GUI lifecycle.
+func clear_inventory() -> void:
+	await PopochiuUtils.i.clean_inventory(self)
+
+
+## Removes all items from this character's inventory without triggering GUI lifecycle.
+func clear_inventory_bg() -> void:
+	PopochiuUtils.i.clean_inventory_bg(self)
+
+
 #endregion
 
 #region SetGet #####################################################################################
+func set_walk_speed(value: float) -> void:
+	if value <= 0.0:
+		PopochiuUtils.print_error(
+			"walk_speed must be greater than 0. The value %s is invalid. Clamping to 1.0." % value
+		)
+		walk_speed = 1.0
+	else:
+		walk_speed = value
+
+
+func set_walk_speed_override(value: float) -> void:
+	if value < 0.0:
+		PopochiuUtils.print_warning(
+			"walk_speed_override cannot be negative. Clamping to 0.0 (override inactive)."
+		)
+		walk_speed_override = 0.0
+	else:
+		walk_speed_override = value
+
+
+## Returns the effective walk speed for the current frame, combining [member walk_speed]
+## (or [member walk_speed_override] if active) with the current perspective scale factor.
+## The scale factor is only applied when [member scaling_adjust_speed] is [code]true[/code].
+func get_current_walk_speed() -> float:
+	var base_speed := walk_speed_override if walk_speed_override > 0.0 else walk_speed
+	# #435: Respect the flag that controls whether speed is adjusted for perspective scaling.
+	return base_speed * (_walk_scale_factor if scaling_adjust_speed else 1.0)
+
+
 func set_alpha(value: float) -> void:
 	alpha = clampf(value, 0.0, 1.0)
 	# Modulate the Sprite2D's alpha to control visibility
@@ -1482,11 +1687,6 @@ func _resolve_character(character: Variant, fallback_script_name: String) -> Pop
 	return PopochiuUtils.c.player
 
 
-func _translate() -> void:
-	if Engine.is_editor_hint() or not is_inside_tree(): return
-	description = PopochiuUtils.e.get_text(_description_code)
-
-
 # Validates an animation name and returns either the validated name or a fallback
 func _get_valid_animation_name(value: String, fallback: String) -> String:
 	# Clear animation cache to force re-evaluation
@@ -1524,7 +1724,7 @@ func _get_vo_cue(emotion := EMPTY_STRING) -> String:
 	return EMPTY_STRING
 
 
-func _get_valid_oriented_animation(animation_label):
+func _get_valid_oriented_animation(animation_label: String) -> String:
 	# Generate prioritized list of animation names to try
 	var prioritized_names = _get_prioritized_animation_names(animation_label)
 
@@ -1650,9 +1850,8 @@ func _move_along_path(walk_distance: float):
 			var next_position = last_character_position.lerp(
 				next_waypoint, walk_distance / distance_to_next_waypoint
 			)
-			if anti_glide_animation:
-				_buffered_position = next_position
-			else:
+			_buffered_position = next_position
+			if not anti_glide_animation:
 				position = next_position
 			# Scale the character depending on the new position
 			update_scale()
@@ -1675,9 +1874,16 @@ func _move_along_path(walk_distance: float):
 		last_character_position = next_waypoint
 		_navigation_path.remove_at(0)
 
-	position = last_character_position
+	_set_position_state(last_character_position)
 	update_scale()
 	_clear_navigation_path()
+
+	# #521: If the path was trimmed at a blocking region boundary, notify game scripts now
+	# that movement has fully stopped. Clearing before emitting prevents re-entrancy issues.
+	if _pending_blocking_region != null:
+		var region := _pending_blocking_region
+		_pending_blocking_region = null
+		blocked_by_region.emit(region)
 
 	# Apply facing behavior after movement completes.
 	# This handles the case where a character is both following one character
@@ -1686,6 +1892,11 @@ func _move_along_path(walk_distance: float):
 	# missing the final snap-to-target immediately after reaching the destination.
 	if _current_faced_character:
 		_face_character(_current_faced_character)
+
+
+func _set_position_state(new_position: Vector2) -> void:
+	position = new_position
+	_buffered_position = new_position
 
 
 # Character navigation system.
@@ -1715,10 +1926,97 @@ func _update_navigation_path(character: PopochiuCharacter, start_position: Vecto
 	# Let's remove the first point of the path since it is the character's current position.
 	_navigation_path.remove_at(0)
 
+	# #521: Trim the path before movement starts so the character never visually enters
+	# a non-walkable region. _pending_blocking_region is cleared first to discard any stale
+	# state from a previous blocked walk, then set to the region that caused trimming (if any).
+	_pending_blocking_region = null
+	if not ignore_blocking_regions:
+		_pending_blocking_region = _trim_path_to_first_blocking_region(start_position)
+
 	# Now the _navigation_path will at least have another point at index 0.
 	# Starting the physics processing will make _physics_process()
 	# move the character along the path.
 	set_physics_process(true)
+
+
+# Character navigation system.
+#
+# Trims _navigation_path at the nearest point where it would cross a non-walkable region
+# boundary. Iterates path segments in order, and for each segment finds the closest
+# intersection across ALL blocking regions (not just the first one found in tree order).
+# Returns the blocking region that caused the trim, or null if no trimming was needed.
+func _trim_path_to_first_blocking_region(start_position: Vector2) -> PopochiuRegion:
+	var blocking_regions: Array = get_tree().get_nodes_in_group("regions").filter(
+		func(r: Node) -> bool: return r is PopochiuRegion and not r.walkable and r.enabled
+	)
+	if blocking_regions.is_empty():
+		return null
+
+	var n := _navigation_path.size()
+	for i in range(n):
+		var seg_start := start_position if i == 0 else _navigation_path[i - 1]
+		var seg_end := _navigation_path[i]
+
+		# Find the nearest hit across all blocking regions for this segment.
+		var nearest_hit := Vector2.INF
+		var nearest_t := INF
+		var blocking_region: PopochiuRegion = null
+
+		for region in blocking_regions:
+			var polygon: PackedVector2Array = region.get_global_polygon()
+			if polygon.is_empty():
+				continue
+			# Character is already inside this region: allow exiting.
+			if Geometry2D.is_point_in_polygon(seg_start, polygon):
+				continue
+			# Find the nearest polygon edge intersection along this segment.
+			# This handles both entry (seg_end inside) and transit (seg_end outside but
+			# the segment still crosses a polygon edge) cases.
+			var hit := _first_entry_intersection(seg_start, seg_end, polygon)
+			if hit == Vector2.INF:
+				continue
+			var t := seg_start.distance_to(hit)
+			if t < nearest_t:
+				nearest_t = t
+				nearest_hit = hit
+				blocking_region = region
+
+		# If any region blocked this segment, trim the path here.
+		if blocking_region:
+			# Pull back from the boundary so the character stops clearly outside the
+			# region. Without this, a subsequent path starting from exactly on the edge
+			# causes is_point_in_polygon() to be unreliable and the trim to be skipped.
+			var stop := nearest_hit - (nearest_hit - seg_start).normalized() * BLOCKING_REGION_PULLBACK
+			_navigation_path.resize(i)
+			_navigation_path.append(stop)
+			return blocking_region
+
+	return null
+
+
+# Returns the point where segment (p1->p2) first crosses a polygon edge, i.e., the nearest
+# intersection when approaching from outside. Returns Vector2.INF if there is no intersection.
+func _first_entry_intersection(p1: Vector2, p2: Vector2, polygon: PackedVector2Array) -> Vector2:
+	var seg_len := p1.distance_to(p2)
+	if seg_len < 0.001:
+		return Vector2.INF
+
+	var best_t := INF
+	var best_hit := Vector2.INF
+	var count := polygon.size()
+
+	for i in range(count):
+		var edge_a := polygon[i]
+		var edge_b := polygon[(i + 1) % count]
+		var hit = Geometry2D.segment_intersects_segment(p1, p2, edge_a, edge_b)
+		if hit == null:
+			continue
+		var t := p1.distance_to(hit) / seg_len
+		if t < best_t:
+			best_t = t
+			best_hit = hit
+
+	return best_hit
 
 
 # Character navigation system.

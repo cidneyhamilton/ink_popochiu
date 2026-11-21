@@ -26,6 +26,8 @@ extends Node
 
 ## Emitted when [param character] speaks [param message].
 signal character_spoke(character: PopochiuCharacter, message: String)
+## Emitted when [param character]'s current dialog line is interrupted via [method PopochiuCharacter.stop_talking].
+signal character_stopped_talking(character: PopochiuCharacter)
 ## Emitted when the player character changes from [param old_player] to [param new_player].
 signal player_changed(old_player: PopochiuCharacter, new_player: PopochiuCharacter)
 
@@ -44,7 +46,8 @@ var _characters := {}
 
 #region Godot ######################################################################################
 func _init() -> void:
-	Engine.register_singleton(&"C", self)
+	if not Engine.has_singleton(&"C"):
+		Engine.register_singleton(&"C", self)
 
 
 #endregion
@@ -181,6 +184,10 @@ func get_instance(script_name: String) -> PopochiuCharacter:
 		return null
 	
 	return load(load(tres_path).scene).instantiate()
+
+
+func get_characters() -> Dictionary:
+	return _characters
 
 
 #endregion

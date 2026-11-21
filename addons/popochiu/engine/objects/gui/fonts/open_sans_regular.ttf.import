@@ -2,7 +2,7 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://dftqv7trxd0s5"
+uid="uid://b430uv556503d"
 path="res://.godot/imported/open_sans_regular.ttf-0be2068355110192a6f726af39d4a4c7.fontdata"
 
 [deps]
@@ -22,7 +22,7 @@ msdf_size=48
 allow_system_fallback=true
 force_autohinter=false
 modulate_color_glyphs=false
-hinting=1
+hinting=3
 subpixel_positioning=4
 keep_rounding_remainders=true
 oversampling=0.0

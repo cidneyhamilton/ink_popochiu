@@ -4,11 +4,16 @@ extends Node
 const REGEX_TEXT = "^(?<character>[\\w]+):\\s*(?<text>.+)"
 const REGEX_COMMAND = ">>>\\s*(?<command>.+)"
 
+const SAVE_GAME_PATH := "user://save_%d_ink.json"
+
 var InkPlayerFactory = preload("res://addons/inkgd/ink_player_factory.gd") as GDScript
 
 var _current_story : InkPlayer = InkPlayerFactory.create()
 var _regex_text: RegEx = RegEx.new()
 var _regex_command: RegEx = RegEx.new()
+
+signal show_avatars_on_left
+signal show_avatars_on_right
 
 func _enter_tree() -> void:
 	InkPopochiuConfig.init_settings()
@@ -101,6 +106,8 @@ func _run_command_with_args(command_name: String, command_args: Array) -> void:
 			var prop_name : String = command_args[0]
 			var animation_name: String = command_args[1]
 			await _animate_prop(prop_name, animation_name)
+		"AUTOSAVE":
+			E.save_game(1, "Autosave")
 		"CHARACTER_HIDE":
 			var char_name = command_args[0]
 			C.get_character(char_name).hide()
@@ -119,7 +126,8 @@ func _run_command_with_args(command_name: String, command_args: Array) -> void:
 		"CLOSE_INVENTORY":
 			PopochiuUtils.i.inventory_hide_requested.emit()
 		"FACE_CLICKED":
-			await C.player.face_clicked()
+			if PopochiuUtils.e.clicked != null:
+				await C.player.face_clicked()
 		"FACE_DOWN":
 			var char_name = command_args[0]
 			await C.get_character(char_name).face_down()
@@ -132,6 +140,18 @@ func _run_command_with_args(command_name: String, command_args: Array) -> void:
 		"FACE_UP":			
 			var char_name = command_args[0]
 			await C.get_character(char_name).face_up()
+		"FADE_MUSIC":
+			var mx_name = command_args[0]
+			var fade_duration = float(command_args[1])
+			var from = float(command_args[2])
+			var to = float(command_args[3])
+			await _fade_mx(mx_name, fade_duration, from, to)
+		"FOLLOW_CHARACTER":
+			var char_name = command_args[0]
+			var char_to_follow_name = command_args[1]
+			C.get_character(char_name).follow_character = char_to_follow_name
+			C.get_character(char_name).start_following_character()
+			print("%s is now following %s" % [char_name, char_to_follow_name])
 		"GAME_OVER":
 			# End the game
 			await G.show_system_text("THE END")
@@ -153,22 +173,57 @@ func _run_command_with_args(command_name: String, command_args: Array) -> void:
 				prop.hide()
 		"IGNORE_WALKABLE_AREAS":
 			C.player.ignore_walkable_areas = command_args[0] == 'true'
+		"MOVE_TO":
+			var prop_name = command_args[0]
+			var marker_name = command_args[1]
+			var prop = R.get_prop(prop_name)
+			var marker_position = R.get_marker_position(marker_name)
+			await prop.move_to(marker_position)
+		"PLAY_MUSIC":
+			var mx_name = command_args[0]
+			var fade_duration = 0.0
+			var music_position = 0.0
+			if len(command_args) > 1:
+				fade_duration = float(command_args[1])
+			if len(command_args) > 2:
+				music_position = float(command_args[2])
+
+			await _play_mx(mx_name, fade_duration, music_position)
 		"PLAY_SFX":
 			var sfx_name = command_args[0]
+			print("Playing sfx: %s " % sfx_name)
 			await _play_sfx(sfx_name)
 		"REMOVE_ITEM":
 			var item_name : String = command_args[0]
 			_remove_item(item_name)
 		"SET_CHARACTER_FLAG":
-			var char_name: String = command_args[0]
-			var state_var: String = command_args[1]
-			var state_val: bool = command_args[2] == "true" 
-			await _set_character_state(char_name, state_var, state_val)
+			if len(command_args) < 3:
+				print("SET_CHARACTER_FLAG needs 3 command args: Character, state variable, and value")
+			else:
+				var char_name: String = command_args[0]
+				var state_var: String = command_args[1]
+				var state_val: bool = command_args[2] == "true" 
+				await _set_character_state(char_name, state_var, state_val)
+		"SET_ITEM_FLAG":
+			if len(command_args) < 3:
+				print("SET_ITEM_FLAG needs 3 command args: Inventory item, state variable, and value")
+			else:
+				var item_name : String = command_args[0]
+				var state_var: String = command_args[1]
+				var state_val: bool = command_args[2] == "true"
+				await _set_item_state(item_name, state_var, state_val)
 		"SET_ROOM_FLAG":
-			var room_name: String = command_args[0]
-			var state_var: String = command_args[1]
-			var state_val: bool = command_args[2] == "true" 
-			await _set_room_state(room_name, state_var, state_val)
+			if len(command_args) < 3:
+				print("SET_ROOM_FLAG needs 3 command args: Room, state variable, and value")
+			else:
+				var room_name: String = command_args[0]
+				var state_var: String = command_args[1]
+				var state_val: bool = command_args[2] == "true" 
+				await _set_room_state(room_name, state_var, state_val)
+		"SHOW_AVATARS_ON_LEFT":
+			show_avatars_on_left.emit()
+		"SHOW_AVATARS_ON_RIGHT":
+			show_avatars_on_right.emit()
 		"SHOW_PROP":
 			var prop_name = command_args[0]
 			var prop = R.get_prop(prop_name)
@@ -176,9 +231,20 @@ func _run_command_with_args(command_name: String, command_args: Array) -> void:
 				print("No prop named %s found" % prop_name)
 			else:
 				prop.show()
+		"STOP_MUSIC":
+			var mx_name = command_args[0]
+			var fade_duration = 0.0
+			if len(command_args) > 1:
+				fade_duration = float(command_args[1])
+				
+			if mx_name in A and A[mx_name].is_playing():
+				A[mx_name].stop(fade_duration)
 		"STOP_SFX":
 			var sfx_name = command_args[0]
-			await _stop_sfx(sfx_name)
+			var fade_duration = 0.0
+			if len(command_args) > 1:
+				fade_duration = float(command_args[1])
+			await _stop_sfx(sfx_name, fade_duration)
 		"TELEPORT_TO_MARKER":			
 			var char_name = command_args[0]
 			var marker_name = command_args[1]
@@ -187,16 +253,20 @@ func _run_command_with_args(command_name: String, command_args: Array) -> void:
 			var prop_name = command_args[0]
 			R.get_prop(prop_name).top_level = command_args[1] == "true"
 			R.get_prop(prop_name).always_on_top = command_args[1] == "true"
+		"UNFOLLOW":
+			var char_name = command_args[0]
+			C.get_character(char_name).stop_following_character()
 		"WAIT":
 			var duration : float = float(command_args[0])
 			await _wait(duration)
 		"WALK_TO_CLICKED":
-			await C.player.walk_to_clicked_blocking()
+			if PopochiuUtils.e.clicked != null:
+				await C.player.walk_to_clicked_blocking()
 		"WALK_TO_MARKER":
 			var char_name = command_args[0]
 			var marker_name = command_args[1]
 			await C.get_character(char_name).walk_to_marker(marker_name)
-			print("Reached marker")			
+			# print("Reached marker %s " % marker_name)			
 		"WALK_TO_MARKER_ASYNC":
 			var char_name = command_args[0]
 			var marker_name = command_args[1]
@@ -238,9 +308,10 @@ func _choose_option(opt: PopochiuDialogOption) -> void:
 
 # Say a line of text and continue the story
 func _say(character: String, text: String) -> void:
-	# print("Saying a line of text")
-	await C.get_character(character).say(text)
-	# print("%s: %s" % [character, text])
+	if C.get_character(character) == null:
+		print("Character named %s not found! Cannot speak line of dialogue." % character)
+	else:
+		await C.get_character(character).say(text)
 	await _continue_story()
 
 
@@ -262,6 +333,9 @@ func _walk_to_marker(char_name: String, marker_name: String) -> void:
 func _set_character_state(char_name: String, state_key: String, state_val: bool) -> void:
 	C.get_character(char_name).state[state_key] = state_val
 
+func _set_item_state(item_name: String, state_key: String, state_val: bool) -> void:
+	I.get_item_instance(item_name).state.set(state_key, state_val)
+				
 func _set_room_state(room_name: String, state_key: String, state_val: bool) -> void:
 	R.get_runtime_room(room_name).state[state_key] = state_val
 	
@@ -289,16 +363,42 @@ func _face_right(char_name: String) -> void:
 	await C.get_character(char_name).face_right()
 
 func _play_sfx(sfx_name: String) -> void:
-	A[sfx_name].play()
+	if sfx_name in A:
+		A[sfx_name].play()
+	else:
+		print("Trying to play missing sound effect: %s" % sfx_name)
 
-func _stop_sfx(sfx_name: String) -> void:
-	A[sfx_name].stop(0)
+func _play_mx(mx_name: String, fade_duration: float, music_position: float) -> void:
+	if mx_name in A:
+		A[mx_name].play(fade_duration, music_position)
+	else:
+		print("Trying to play missing music track: %s" % mx_name)
+
+func _fade_mx(mx_name: String, fade_duration: float, from: float, to: float) -> void:
+	if mx_name in A:
+		A[mx_name].fade(fade_duration, false, from, to)
+	else:
+		print("Trying to play missing music track: %s" % mx_name)
 	
-func _add_item(item_name: String) -> void:
-	I.get_item_instance(item_name).add(false)
+func _stop_sfx(sfx_name: String, duration: float = 0.0) -> void:
+	if sfx_name in A:
+		A[sfx_name].stop(duration)
+	else:
+		print("Trying to stop missing sound effect: %s" % sfx_name)
+	
+func _add_item(item_name: String, show_animation: bool = false) -> void:
+	var item = I.get_item_instance(item_name)
+	if item == null:
+		print("Trying to add missing item named %s" % item_name)
+	else:
+		I.get_item_instance(item_name).add()
 
-func _remove_item(item_name: String) -> void:
-	I.get_item_instance(item_name).remove()
+func _remove_item(item_name: String, show_animation: bool = false) -> void:
+	var item = I.get_item_instance(item_name)
+	if item == null:
+		print("Trying to remove missing item named %s" % item_name)
+	else:
+		I.get_item_instance(item_name).remove()
 
 func _wait(duration: float) -> void:
 	await E.wait(duration)
@@ -346,5 +446,11 @@ func play(knot: String) -> void:
 	# Handled by observing variables
 	# _sync_ink_variables_to_popochiu()
 
-	
+
+func save(slot := 1) -> void:
+	_current_story.save_state_to_path(SAVE_GAME_PATH % slot)
+
+func load(slot := 1) -> void:
+	_current_story.load_state_from_path(SAVE_GAME_PATH % slot)
+
 #endregion

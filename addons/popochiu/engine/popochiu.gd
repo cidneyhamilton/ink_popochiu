@@ -26,8 +26,8 @@ extends Node
 
 ## Emitted when the text speed changes in [PopochiuSettings].
 signal text_speed_changed
-## Emitted when the language changes in [PopochiuSettings].
-signal language_changed
+## Emitted when [member current_locale] changes via [method set_locale].
+signal language_changed(locale: String)
 ## Emitted after [method save_game] saves a file with the current game data.
 signal game_saved
 ## Emitted before a loaded game starts the transition to show the loaded data.
@@ -90,6 +90,9 @@ var auto_continue_after := -1.0
 ## The current dialog style used by the game. When this property changes, the
 ## [signal dialog_style_changed] signal is emitted.
 var current_dialog_style := settings.dialog_style : set = set_dialog_style
+## The current locale code (e.g. [code]"en"[/code], [code]"es"[/code]). When this property changes,
+## [signal language_changed] is emitted and the [TranslationServer] locale is updated.
+var current_locale: String = TranslationServer.get_locale() : set = set_locale, get = get_locale
 ## The scale value of the game. Defined by the native game resolution compared with (356, 200),
 ## which is the default game resolution defined by Popochiu.
 var scale := Vector2.ONE
@@ -119,11 +122,13 @@ var _saveload: Resource = null
 
 #region Godot ######################################################################################
 func _init() -> void:
-	Engine.register_singleton(&"E", self)
+	if not Engine.has_singleton(&"E"):
+		Engine.register_singleton(&"E", self)
 
 
 func _ready() -> void:
 	set_process_input(false)
+	_check_touchscreen_input()
 	_saveload = load(SAVELOAD_PATH).new()
 	
 	# Create the AudioManager
@@ -167,7 +172,7 @@ func _ready() -> void:
 		var ii: PopochiuInventoryItem = PopochiuUtils.i.get_item_instance(key)
 		
 		if is_instance_valid(ii):
-			ii.add(false)
+			await ii.add()
 	
 	if settings.scale_gui:
 		PopochiuUtils.cursor.scale_cursor(scale)
@@ -279,10 +284,23 @@ func cutscene(instructions: Array) -> void:
 	cutscene_skipped = false
 
 
-## Returns [param msg] translated to the current language if
-## [member PopochiuSettings.use_translations] is enabled. Otherwise returns [param msg] unchanged.
-func get_text(msg: String) -> String:
-	return tr(msg) if settings.use_translations else msg
+## Translates [param msg] via [method Object.tr], then applies format [param params] if provided.
+## Accepts an [Array] for [code]%[/code]-style interpolation or a [Dictionary] for
+## [method String.format]-style. If [param params] is not [code]null[/code] but has an invalid
+## type, an error is printed and the translated (but non-interpolated) string is returned as-is.
+func translate(msg: String, params: Variant = null) -> String:
+	var text := tr(msg)
+	if params == null:
+		return text
+	if params is Array:
+		return text % params
+	if params is Dictionary:
+		return text.format(params)
+	PopochiuUtils.print_error(
+		"Invalid params type passed to translate(). Expected Array or Dictionary, got: %s"
+		% type_string(typeof(params))
+	)
+	return text
 
 
 ## Adds an action, represented by [param data], to the [member history].
@@ -363,30 +381,6 @@ func queueable(node: Object, method: String, params := [], signal_name := "") ->
 	return func (): await _queueable(node, method, params, signal_name)
 
 
-## @deprecated Available in 2.1 - Will be removed in 2.2.
-## Plays the transition [param anim_name] animation in the [TransitionLayer] with a [param duration] in
-## seconds with the specified [param mode]. This method is intended to be used inside a [method queue] of
-## instructions.
-func queue_play_transition(anim_name: String, duration: float, mode: int) -> Callable:
-	PopochiuUtils.print_warning(
-		"E.queue_play_transition() is deprecated and will be removed in Popochiu 2.2." +
-		" Use T.queue_play_transition() instead."
-	)
-	return func (): await play_transition(anim_name, duration, mode)
-
-## @deprecated Available in 2.1 - Will be removed in 2.2.
-## Plays the transition [param anim_name] animation in the [TransitionLayer] with a [param duration] in
-## seconds with the specified [param mode].
-func play_transition(anim_name: String, duration: float, mode: int) -> void:
-	PopochiuUtils.print_warning(
-		"E.play_transition() is deprecated and will be removed in Popochiu 2.2." +
-		" Use T.play_transition() instead."
-	)
-	PopochiuUtils.t.play_transition(anim_name, duration, mode)
-	
-	await PopochiuUtils.t.transition_finished
-
-
 ## Returns [code]true[/code] if any saved game sessions exist in the game's save folder
 ## ([code]user://[/code] by default — open via [b]Project > Open User Data Folder[/b]).
 func has_save() -> bool:
@@ -412,7 +406,11 @@ func save_game(slot := 1, description := "") -> void:
 
 ## Loads the game in the given [param slot].
 func load_game(slot := 1) -> void:
-	PopochiuUtils.i.clean_inventory(true)
+	# Clean all character inventories before loading
+	for c_name: String in PopochiuUtils.c.characters_states:
+		var character: PopochiuCharacter = PopochiuUtils.c.get_character(c_name)
+		if is_instance_valid(character):
+			await PopochiuUtils.i.clean_inventory(character)
 	
 	if PopochiuUtils.d.current_dialog:
 		PopochiuUtils.d.current_dialog.stop()
@@ -427,10 +425,6 @@ func load_game(slot := 1) -> void:
 		true,
 		false # Do not store the state of the current room
 	)
-
-## @deprecated Now this is done by [method PopochiuMainCamera.stop_shake].
-func stop_camera_shake() -> void:
-	camera.stop_shake()
 
 
 # @popochiu-docs-ignore
@@ -546,6 +540,23 @@ func get_hovered() -> PopochiuClickable:
 	return null
 
 
+func set_locale(value: String) -> void:
+	if value == current_locale:
+		return
+
+	TranslationServer.set_locale(value)
+	# Re-read from TranslationServer to ensure the locale was set correctly
+	# (e.g. if the provided value is not valid, the locale will fall back to
+	# the default one).
+	current_locale = TranslationServer.get_locale()
+
+	language_changed.emit(current_locale)
+
+
+func get_locale() -> String:
+	return TranslationServer.get_locale()
+
+
 func set_text_speed(value: float) -> void:
 	text_speed = value
 	text_speed_changed.emit()
@@ -564,6 +575,16 @@ func set_dialog_style(value: int) -> void:
 #endregion
 
 #region Private ####################################################################################
+# Warns when a touchscreen device runs without mouse emulation: Popochiu normalizes touch to mouse
+# events, so disabling it leaves the game with no pointer input at all.
+func _check_touchscreen_input() -> void:
+	if DisplayServer.is_touchscreen_available() and not Input.is_emulating_mouse_from_touch():
+		PopochiuUtils.print_warning(
+			"Touchscreen detected but mouse emulation is off. Enable 'Emulate Mouse From Touch' "
+			+ "in Project Settings > Input Devices > Pointing so touch can drive interactions."
+		)
+
+
 func _set_in_room(value: bool) -> void:
 	in_room = value
 	PopochiuUtils.cursor.toggle_visibility(in_room)

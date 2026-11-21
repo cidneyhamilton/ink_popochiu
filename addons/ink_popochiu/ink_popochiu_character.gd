@@ -9,29 +9,29 @@ func _on_room_set() -> void:
 
 # When the node is clicked
 func _on_click() -> void:
-	print("Clicking...")
+	# print("Clicking...")
 	if C.player.can_move:
 		C.player.can_move = false
 		await on_interact()
 		C.player.can_move = true
 
 func _on_double_click() -> void:
-	print("Double clicking")
+	# print("Double clicking")
 	await _on_click()
 
 # When the node is right clicked
 func _on_right_click() -> void:
-	print("Right clicking")
+	# print("Right clicking")
 	await _on_click()
 
 # When the node is middle clicked
 func _on_middle_click() -> void:
-	print("Middle clicking")
+	# print("Middle clicking")
 	await _on_click()
 
 # When the node is clicked and there is an inventory item selected
 func _on_item_used(_item: PopochiuInventoryItem) -> void:
-	print("Using item")
+	# print("Using item")
 	if C.player.can_move:
 		C.player.can_move = false
 		await on_default_item()

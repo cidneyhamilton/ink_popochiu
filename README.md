@@ -4,11 +4,13 @@ A [Godot Engine](https://godotengine.org/) plugin that supports playing [Ink](ht
 
 This is inspired by Graham Hayes' [AC-Ink-Integration](https://github.com/Graham-Hayes/AC-Ink-Integration) and Deep Entertainment's [Escoria Ink Bridge](https://github.com/deep-entertainment/escoria-ink-bridge).
 
+Released under the MIT License.
+
 ## Requirements
 
-+ [Godot 4.6](https://godotengine.org/)
++ [Godot 4.7](https://godotengine.org/)
 + [inkGD](https://github.com/ephread/inkgd)
-+ [Popochiu 2.1](https://github.com/mapedorr/popochiu)
++ [Popochiu 2.2](https://github.com/mapedorr/popochiu)
 + [Ink](https://github.com/inkle/ink)
 
 ## Writing Dialog

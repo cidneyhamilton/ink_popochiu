@@ -1,6 +1,6 @@
 # @popochiu-docs-category game-objects
 @tool
-@icon("res://addons/popochiu/icons/room.png")
+@icon("res://addons/popochiu/icons/room.svg")
 class_name PopochiuRoom
 extends Node2D
 ## Represents a location in the game where characters can move and interact with objects.
@@ -92,12 +92,12 @@ func _ready():
 	PopochiuUtils.r.room_readied(self)
 
 
-func _unhandled_input(event: InputEvent):
+func _unhandled_input(event: InputEvent) -> void:
 	if (
-		not PopochiuUtils.get_click_or_touch_index(event) in [
+		not PopochiuUtils.get_click_button_index(event) in [
 			MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT
 		]
-		or (not event is InputEventScreenTouch and PopochiuUtils.e.hovered)
+		or PopochiuUtils.e.hovered
 	):
 		return
 
@@ -133,6 +133,8 @@ func _on_room_entered() -> void:
 
 ## Called when the room-changing transition finishes. At this point the room is visible.[br]
 ## Override this to start cutscenes, play sounds, etc.
+## [br][br]
+## [b]NOTE:[/b] This method is [b]not[/b] called when loading a saved game.
 func _on_room_transition_finished() -> void:
 	pass
 
@@ -141,6 +143,15 @@ func _on_room_transition_finished() -> void:
 ## is not processing inputs, and has no children in the [b]$Characters[/b] node.[br]
 ## Override this to cleanup any custom data or states before leaving the room, if needed.
 func _on_room_exited() -> void:
+	pass
+
+
+## Called after loading a saved game, once the room state is fully restored.
+## [br][br]
+## [b]NOTE:[/b] [method _on_room_transition_finished] is [b]not[/b] called when loading
+## a saved game. Use this method instead to resume ongoing events, re-establish
+## signal connections, restart ambient audio, etc.
+func _on_restore_from_savegame() -> void:
 	pass
 
 
@@ -236,14 +247,20 @@ func has_character(character_name: String) -> bool:
 #
 ## Called by Popochiu when loading the room to assign its camera limits to the player camera.
 func setup_camera() -> void:
-	if width > 0 and width > PopochiuUtils.e.width:
-		var h_diff: int = (PopochiuUtils.e.width - width) / 2
+	# Compare against the base project resolution, not the live viewport size.
+	# With stretch/aspect = expand the viewport grows beyond the base resolution, which would make
+	# rooms that are smaller than the expanded size skip limit assignment and lock the camera
+	# to the inflated default limits. See: #96
+	var vp_w: int = ProjectSettings.get_setting(PopochiuResources.DISPLAY_WIDTH)
+	var vp_h: int = ProjectSettings.get_setting(PopochiuResources.DISPLAY_HEIGHT)
+	if width > vp_w:
+		var h_diff: int = (vp_w - width) / 2
 		PopochiuUtils.e.camera.limit_left = h_diff
-		PopochiuUtils.e.camera.limit_right = PopochiuUtils.e.width - h_diff
-	if height > 0 and height > PopochiuUtils.e.height:
-		var v_diff: int = (PopochiuUtils.e.height - height) / 2
-		PopochiuUtils.e.camera.limit_top = - v_diff
-		PopochiuUtils.e.camera.limit_bottom = PopochiuUtils.e.height - v_diff
+		PopochiuUtils.e.camera.limit_right = vp_w - h_diff
+	if height > vp_h:
+		var v_diff: int = (vp_h - height) / 2
+		PopochiuUtils.e.camera.limit_top = -v_diff
+		PopochiuUtils.e.camera.limit_bottom = vp_h - v_diff
 
 
 ## Removes all character from the room.[br]
@@ -263,6 +280,9 @@ func clean_characters() -> void:
 			c.remove_child(character_child)
 			_characters_children[c.script_name].append(character_child)
 
+		# Detach immediately so the rest of the frame doesn't see this editor-placed copy as a
+		# character still in the room. #552 (a lingering copy made add_character() be skipped).
+		$Characters.remove_child(c)
 		c.queue_free()
 
 
@@ -531,9 +551,6 @@ func _collect_all_obstacles() -> Array[NavigationObstacle2D]:
 
 		var obstacle: NavigationObstacle2D = prop.get_navigation_obstacle()
 		if obstacle:
-			# Adjust the global position to account for the baseline because
-			# props are currently using y-sorting and not z-index.
-			obstacle.position.y -= prop.baseline * scale.y
 			obstacles.append(obstacle)
 
 	# Collect obstacles from characters (excluding temporary editor instances and player character)

@@ -50,13 +50,14 @@ func _ready() -> void:
 	# Connect to singletons events
 	PopochiuUtils.e.text_speed_changed.connect(change_speed)
 	PopochiuUtils.c.character_spoke.connect(_show_dialogue)
+	PopochiuUtils.c.character_stopped_talking.connect(_on_character_stopped_talking)
 	
 	continue_icon.hide()
 
 
 func _input(event: InputEvent) -> void:
 	if (
-		not PopochiuUtils.get_click_or_touch_index(event) in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]
+		not PopochiuUtils.get_click_button_index(event) in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]
 		or modulate.a == 0.0
 	):
 		return
@@ -72,7 +73,7 @@ func _input(event: InputEvent) -> void:
 
 #region Public #####################################################################################
 func play_text(props: Dictionary) -> void:
-	var msg: String = PopochiuUtils.e.get_text(props.text)
+	var msg: String = props.text
 	_is_waiting_input = false
 	_dialog_pos = props.position
 	
@@ -94,7 +95,7 @@ func play_text(props: Dictionary) -> void:
 		
 		tween = create_tween()
 		tween.tween_property(
-			rich_text_label, "visible_ratio",
+			rich_text_label, ^"visible_ratio",
 			1,
 			_secs_per_character * rich_text_label.get_total_character_count()
 		).from(0.0)
@@ -152,6 +153,10 @@ func change_speed() -> void:
 #endregion
 
 #region Private ####################################################################################
+func _on_character_stopped_talking(_chr: PopochiuCharacter) -> void:
+	disappear()
+
+
 func _show_dialogue(chr: PopochiuCharacter, msg := "") -> void:
 	if not visible: return
 	
@@ -176,7 +181,7 @@ func _modify_size(_msg: String, _target_position: Vector2) -> void:
 ## Creates a RichTextLabel to calculate the resulting size of this node once the whole text is shown.
 func _calculate_size(msg: String) -> Vector2:
 	var rt := RichTextLabel.new()
-	rt.add_theme_font_override("normal_font", get_theme_font("normal_font"))
+	rt.add_theme_font_override(&"normal_font", get_theme_font(&"normal_font"))
 	rt.bbcode_enabled = true
 	rt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	rt.text = msg
@@ -185,7 +190,7 @@ func _calculate_size(msg: String) -> Vector2:
 	
 	# Create a Label to check if the text exceeds the wrap_width
 	var lbl := Label.new()
-	lbl.add_theme_font_override("normal_font", get_theme_font("normal_font"))
+	lbl.add_theme_font_override(&"normal_font", get_theme_font(&"normal_font"))
 	
 	_set_default_label_size(lbl)
 	
@@ -197,28 +202,28 @@ func _calculate_size(msg: String) -> Vector2:
 	
 	await get_tree().process_frame
 	
-	var _size := lbl.size
+	var size := lbl.size
 	
-	if _size.x > wrap_width:
+	if size.x > wrap_width:
 		# This node will have the width of the wrap_width
-		_size.x = wrap_width
+		size.x = wrap_width
 		rt.fit_content = true
-		rt.size.x = _size.x
+		rt.size.x = size.x
 		rt.text = msg
 		
 		await get_tree().process_frame
 		
-		_size = rt.size
+		size = rt.size
 	else:
 		# This node will have the width of the text
-		_size.y = get_meta(DFLT_SIZE).y
+		size.y = get_meta(DFLT_SIZE).y
 	
 	var characters_count := lbl.get_total_character_count()
 	
 	lbl.free()
 	rt.free()
 	
-	return _size
+	return size
 
 
 func _set_default_label_size(lbl: Label) -> void:
@@ -255,7 +260,7 @@ func _show_icon() -> void:
 		# For manual continuation: make the icon jump
 		continue_icon.value = 100.0
 		continue_icon_tween.tween_property(
-			continue_icon, "position:y", _get_icon_to_position(), 0.8
+			continue_icon, ^"position:y", _get_icon_to_position(), 0.8
 		).from(_get_icon_from_position()).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 		continue_icon_tween.set_loops()
 	else:
@@ -265,8 +270,7 @@ func _show_icon() -> void:
 		continue_icon.position.y = size.y / 2.0
 		
 		continue_icon_tween.tween_property(
-			continue_icon, "value",
-			100.0, 3.0,
+			continue_icon, ^"value", 100.0, 3.0,
 		).from_current().set_ease(Tween.EASE_OUT)
 		continue_icon_tween.finished.connect(_continue)
 	
