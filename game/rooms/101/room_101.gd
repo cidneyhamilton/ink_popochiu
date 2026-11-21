@@ -27,4 +27,12 @@ func _on_room_exited() -> void:
 	pass
 
 
+
+
+# Called after loading a saved game. The state of the room and all its objects is
+# completely restored at this point. Use this to resume ongoing events,
+# re-establish connections, or restart ambient audio.
+# NOTE: `_on_room_transition_finished()` is NOT called when loading a savegame.
+func _on_restore_from_savegame() -> void:
+	pass
 #endregion
